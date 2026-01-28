@@ -1,0 +1,25 @@
+{
+  "name": "postman-clone",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "npm run start:all",
+    "server": "npm start --prefix backend",
+    "client": "npm start --prefix frontend",
+    "start:all": "concurrently -n SERVER,CLIENT -c blue,green \"npm run server\" \"npm run client\""
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "@emailjs/browser": "^4.4.1",
+    "ace-builds": "^1.43.4",
+    "body-parser": "^2.2.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.19.3",
+    "react-ace": "^14.0.1"
+  }
+}

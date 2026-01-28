@@ -1,0 +1,63 @@
+.request-form-container {
+  margin-top: 20px;
+  background-color: #1e1e1e;
+  padding: 16px;
+  border-radius: 12px;
+  color: white;
+}
+
+.request-form {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.request-url {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #333;
+  border-radius: 8px;
+  background-color: #2a2a2a;
+  color: white;
+}
+
+.request-method {
+  padding: 10px;
+  border-radius: 8px;
+  background-color: #2a2a2a;
+  border: 1px solid #333;
+  color: white;
+}
+
+.send-btn {
+  padding: 10px 16px;
+  background-color: #3b82f6;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  color: white;
+  transition: background-color 0.2s;
+}
+
+.send-btn:hover {
+  background-color: #2563eb;
+}
+
+.response-box {
+  background-color: #2a2a2a;
+  border-radius: 10px;
+  padding: 16px;
+  margin-top: 16px;
+}
+
+.response-box pre {
+  background-color: #111;
+  color: #00ffcc;
+  padding: 10px;
+  border-radius: 8px;
+  overflow-x: auto;
+}
+
+.error {
+  color: #ff5555;
+}

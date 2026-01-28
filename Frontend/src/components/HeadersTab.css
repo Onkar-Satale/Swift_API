@@ -1,0 +1,105 @@
+.headers-tab {
+  background: #1e1e1e;
+  padding: 12px;
+  border-radius: 8px;
+  font-family: "Inter", sans-serif;
+  color: #fff;
+}
+
+.headers-table {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.headers-table-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr 40px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #aaa;
+  padding: 4px 0;
+}
+
+.headers-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 40px;
+  gap: 8px;
+}
+
+.headers-row input {
+  background: #2b2b2b;
+  border: 1px solid #333;
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-size: 14px;
+  color: #fff;
+}
+
+.headers-row input:focus {
+  outline: none;
+  border-color: #4a90e2;
+}
+
+.remove-btn {
+  background: #ff4d4d;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  color: white;
+  padding: 0;
+  height: 32px;
+  transition: background 0.2s ease;
+}
+
+.remove-btn:disabled {
+  background: #555;
+  cursor: not-allowed;
+}
+
+.remove-btn:hover:not(:disabled) {
+  background: #e60000;
+}
+
+.add-btn {
+  margin-top: 12px;
+  background: #4a90e2;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  color: white;
+  transition: background 0.2s ease;
+}
+
+.add-btn:hover {
+  background: #357ab7;
+}
+
+
+
+.headers-tab {
+  width: 100%;
+}
+
+.headers-table {
+  width: 100%;
+}
+
+.headers-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 40px;
+  gap: 8px;
+  width: 100%;
+}
+
+.headers-row>* {
+  width: 100%;
+}
+
+.headers-row input {
+  width: 100%;
+  box-sizing: border-box;
+}

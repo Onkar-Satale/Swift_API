@@ -1,0 +1,129 @@
+/* --- Login Page Container --- */
+.login-page {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #1e1e1e;
+  font-family: Arial, sans-serif;
+  color: #fff;
+  overflow: hidden;
+}
+
+/* --- Form Card --- */
+.login-page form {
+  background-color: #111;
+  padding: 30px 25px;
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+/* --- Heading --- */
+.login-page h2 {
+  text-align: center;
+  font-size: 22px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+/* --- Labels --- */
+.login-page label {
+  margin: 10px 0 5px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* --- Input Fields --- */
+.login-page input {
+  padding: 10px;
+  margin-bottom: 10px;
+  background-color: #1f1f1f;
+  border: 1px solid #333;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 14px;
+}
+
+.login-page input:focus {
+  outline: none;
+  border: 1px solid #004cff;
+  box-shadow: 0 0 4px #004cff;
+}
+
+/* --- Buttons --- */
+.login-page button {
+  padding: 10px;
+  margin-top: 10px;
+  background-color: #004cff;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.login-page button:hover {
+  background-color: #005fcc;
+}
+
+.login-page button:disabled {
+  background-color: #333;
+  cursor: not-allowed;
+}
+
+/* --- Error Message --- */
+.login-error {
+  background-color: #3b0a0a;
+  color: #ffb3b3;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  border-radius: 6px;
+  border: 1px solid #ff4d4d;
+  font-size: 14px;
+  text-align: center;
+}
+
+/* --- Signup Link --- */
+.login-page p {
+  text-align: center;
+  font-size: 14px;
+  margin-top: 15px;
+}
+
+.login-page p span {
+  color: #004cff;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.login-page p span:hover {
+  color: #66a3ff;
+}
+
+/* --- Responsive --- */
+@media (max-width: 450px) {
+  .login-page form {
+    width: 90%;
+    padding: 20px;
+  }
+}
+
+/* Fix Chrome autofill background for dark theme on Login Page */
+.login-page input:-webkit-autofill,
+.login-page input:-webkit-autofill:hover,
+.login-page input:-webkit-autofill:focus,
+.login-page input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0px 1000px #1f1f1f inset;
+  /* match input background */
+  -webkit-text-fill-color: #fff;
+  /* text color */
+  transition: background-color 5000s ease-in-out 0s;
+}

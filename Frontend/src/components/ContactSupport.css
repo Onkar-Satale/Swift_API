@@ -1,0 +1,157 @@
+html,
+body {
+  height: 100%;
+  margin: 0;
+  background-color: #1e1e1e;
+  overflow: hidden;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  color: #eaeaea;
+}
+
+.support-page {
+  height: 100vh;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  padding: 32px;
+  max-width: 800px;
+  margin: auto;
+  color: #eaeaea;
+}
+
+.support-page h1 {
+  font-size: 2rem;
+  text-align: center;
+  margin-bottom: 24px;
+  color: #ffffff;
+  border-bottom: 2px solid #333;
+  padding-bottom: 10px;
+}
+
+/* Card style form */
+.support-card {
+  background-color: #252525;
+  padding: 24px;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* Floating labels */
+.support-form .form-group {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.support-form input,
+.support-form textarea {
+  width: 100%;
+  padding: 12px;
+  background: #252525;
+  /* dark background to match card */
+  border: 1px solid #555;
+  border-radius: 6px;
+  color: #eaeaea;
+  /* readable text color */
+  font-size: 16px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+/* Fix Chrome / Edge autofill */
+input:-webkit-autofill,
+textarea:-webkit-autofill {
+  background-color: #252525 !important;
+  color: #eaeaea !important;
+}
+
+/* Focus state */
+.support-form input:focus,
+.support-form textarea:focus {
+  border-color: #4da3ff;
+  background-color: #252525;
+  color: #eaeaea;
+}
+
+/* Labels */
+.support-form label {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  color: #888;
+  font-size: 14px;
+  pointer-events: none;
+  transition: all 0.2s ease;
+}
+
+/* Floating label when focused or filled */
+.support-form input:focus+label,
+.support-form input:not(:placeholder-shown)+label,
+.support-form textarea:focus+label,
+.support-form textarea:not(:placeholder-shown)+label {
+  top: -10px;
+  left: 10px;
+  font-size: 12px;
+  color: #4da3ff;
+  background-color: #252525;
+  padding: 0 4px;
+}
+
+/* Placeholder color */
+.support-form input::placeholder,
+.support-form textarea::placeholder {
+  color: #aaa;
+}
+
+/* Submit button */
+.submit-btn {
+  background-color: #007BFF;
+  color: #fff;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: 0.2s;
+}
+
+.submit-btn:hover {
+  background-color: #0056b3;
+}
+
+/* Toast notification */
+.toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #4da3ff;
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 6px;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.5);
+  animation: slideUp 0.4s ease-in-out;
+}
+
+/* Slide animation for toast */
+@keyframes slideUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Autofill fix for Chrome & Edge (dark theme) */
+input:-webkit-autofill,
+textarea:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0px 1000px #252525 inset !important;
+  /* override yellow bg */
+  -webkit-text-fill-color: #ffffff !important;
+  /* set autofill text to white */
+  color: #ffffff !important;
+  /* fallback for manual typing */
+  transition: background-color 5000s ease-in-out 0s;
+  /* Chrome/Edge hack */
+}

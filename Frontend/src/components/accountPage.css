@@ -1,0 +1,655 @@
+:root {
+  --bg: #111;
+  /* page background */
+  --panel: #1b1b1b;
+  /* card bg */
+  --panel-2: #272727;
+  /* hover */
+  --border: #21262d;
+  --muted: #8b949e;
+  --fg: #e6edf3;
+  --accent: #007bff;
+  --danger: #da3633;
+  --card-shadow: 0 6px 20px rgba(2, 6, 23, 0.6);
+}
+
+/* ==== Page wrapper ==== */
+.account-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--bg);
+  padding: 24px;
+  box-sizing: border-box;
+  color: var(--fg);
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-y: auto;
+}
+
+/* optional central container so page doesn't stretch too wide */
+.account-page .account-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* ==== Header ==== */
+.account-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+  gap: 12px;
+}
+
+.account-header h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--fg);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* header action group */
+.header-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+/* ==== Buttons ==== */
+.back-btn,
+.logout-btn,
+.edit-btn,
+.create-btn {
+  font-size: 13px;
+  padding: 7px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all .12s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* neutral back */
+.back-btn {
+  background: transparent;
+  border-color: #30363d;
+  color: var(--muted);
+}
+
+.back-btn:hover {
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--fg);
+  border-color: #ffffff;
+}
+
+.back-btn:active {
+  transform: translateY(1px);
+}
+
+/* danger logout */
+.logout-btn {
+  background: var(--danger);
+  color: #fff;
+  border-color: #a5271c;
+}
+
+.logout-btn:hover {
+  background: #b3241a;
+  border-color: #821b13;
+}
+
+.logout-btn:active {
+  transform: translateY(1px);
+}
+
+/* small btns inside cards */
+.edit-btn,
+.create-btn {
+  background: var(--accent);
+  color: #fff;
+  border-color: rgba(0, 0, 0, 0.15);
+}
+
+.edit-btn:hover,
+.create-btn:hover {
+  background: #005bbf;
+}
+
+/* ==== Content grid ==== */
+.account-content {
+  margin-top: 20px;
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  align-items: stretch;
+  /* ⬅ ensures equal height stretch */
+}
+
+/* ==== Card base ==== */
+.info-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px;
+  box-sizing: border-box;
+  transition: transform .15s ease, box-shadow .15s ease, background .15s ease, border-color .15s ease;
+  box-shadow: none;
+  min-height: 150px;
+  /* ⬅ give a taller minimum */
+  display: flex;
+  /* ⬅ flex for uniform structure */
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.info-card:hover {
+  transform: translateY(-4px);
+  background: var(--panel-2);
+  border-color: #2a2a2a;
+  box-shadow: var(--card-shadow);
+}
+
+/* headings/content inside cards */
+.info-card h3 {
+  margin: 0 0 10px 0;
+  color: var(--fg);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.info-card p,
+.info-card li {
+  margin: 4px 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+/* lists */
+.info-card ul {
+  margin: 8px 0 0 16px;
+  padding: 0;
+}
+
+/* ==== Profile card special ==== */
+.profile-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), #0066d9);
+  color: #fff;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  flex-shrink: 0;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+/* profile details in profile card */
+.profile-card .profile-meta h4 {
+  margin: 0 0 6px 0;
+  color: var(--fg);
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.profile-card .profile-meta p {
+  margin: 2px 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* ==== Stats small boxes (inside cards) ==== */
+.stats-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+
+.stat {
+  min-width: 120px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.02);
+}
+
+.stat .num {
+  font-weight: 700;
+  color: var(--fg);
+  font-size: 16px;
+}
+
+.stat .label {
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 4px;
+}
+
+/* ==== API key / security row ==== */
+.api-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.api-key {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px dashed rgba(255, 255, 255, 0.03);
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* ==== Links ==== */
+.info-card a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.info-card a:hover {
+  text-decoration: underline;
+}
+
+/* ==== Small helpers ==== */
+.muted {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.block {
+  display: block;
+}
+
+/* ==== Dark scrollbars (optional) ==== */
+.account-page::-webkit-scrollbar,
+.info-card::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.account-page::-webkit-scrollbar-track,
+.info-card::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.account-page::-webkit-scrollbar-thumb,
+.info-card::-webkit-scrollbar-thumb {
+  background: rgba(160, 160, 160, 0.12);
+  border-radius: 8px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+}
+
+.account-page::-webkit-scrollbar-thumb:hover {
+  background: rgba(160, 160, 160, 0.2);
+}
+
+/* firefox */
+.account-page,
+.info-card {
+  scrollbar-color: rgba(160, 160, 160, 0.12) transparent;
+  scrollbar-width: thin;
+}
+
+/* ==== Responsive tweaks ==== */
+@media (max-width: 880px) {
+  .account-page {
+    padding: 16px;
+  }
+
+  .avatar {
+    width: 56px;
+    height: 56px;
+    font-size: 20px;
+  }
+
+  .account-content {
+    gap: 14px;
+  }
+}
+
+@media (max-width: 520px) {
+
+  .back-btn,
+  .logout-btn {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+
+  .account-page {
+    padding: 12px;
+  }
+
+  .profile-card {
+    gap: 10px;
+  }
+}
+
+.link-btn {
+  background: none;
+  border: none;
+  color: #007bff;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+  font: inherit;
+}
+
+.link-btn:hover {
+  color: #ffffff;
+}
+
+.account-footer {
+  background-color: #1f1f1f;
+  /* dark background */
+  color: #fff;
+  text-align: center;
+  padding: 12px 20px;
+  border-top: 1px solid #333;
+  margin-top: 20px;
+}
+
+.account-footer .footer-links {
+  margin-top: 8px;
+}
+
+.account-footer .link-btn {
+  background: none;
+  border: none;
+  color: #4caf50;
+  text-decoration: underline;
+  cursor: pointer;
+  margin: 0 6px;
+  font: inherit;
+}
+
+.account-footer .link-btn:hover {
+  color: #3ea049;
+}
+
+.account-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #1e1e1e;
+  color: #fff;
+  font-family: 'Arial', sans-serif;
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.account-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.account-header h2 {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.header-actions button {
+  margin-left: 8px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  background: #004cff;
+  color: white;
+  font-weight: 600;
+}
+
+.account-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.info-card {
+  background: #222;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+.profile-card {
+  flex-direction: row;
+  align-items: center;
+  gap: 16px;
+}
+
+.avatar {
+  width: 60px;
+  height: 60px;
+  background: #007bff;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 24px;
+  font-weight: 700;
+  color: white;
+}
+
+.info-card h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.info-card button {
+  margin-top: 8px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  background: #004cff;
+  color: white;
+  font-size: 13px;
+}
+
+.info-card ul {
+  padding-left: 16px;
+}
+
+.account-footer {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #888;
+}
+
+
+.logout-btn {
+  padding: 6px 12px !important;
+  border-radius: 6px !important;
+  border: none !important;
+  cursor: pointer !important;
+  background: #e53935 !important;
+  /* force red color */
+  color: white !important;
+  font-weight: 600 !important;
+  transition: background 0.2s ease !important;
+}
+
+.logout-btn:hover {
+  background: #d32f2f !important;
+  /* force darker red on hover */
+}
+
+.account-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  /* full viewport height */
+  background: #1e1e1e;
+  color: #fff;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.account-content {
+  display: flex;
+  /* horizontal row */
+  gap: 20px;
+  /* spacing between cards */
+  padding-bottom: 10px;
+  /* optional space at bottom */
+  flex-wrap: nowrap;
+  /* all in single row */
+}
+
+.info-card {
+  min-width: 280px;
+  /* card width */
+  max-width: 280px;
+  /* fix card size */
+  flex: 0 0 auto;
+  /* prevent stretching */
+  background: #222;
+  border-radius: 12px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+/* sticky footer */
+.account-footer {
+  margin-top: auto;
+  /* push footer to bottom */
+  background-color: #1f1f1f;
+  color: #fff;
+  text-align: center;
+  padding: 12px 20px;
+  border-top: 1px solid #333;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Page layout */
+.account-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ===============================
+   PERFECT RESPONSIVE CARD LAYOUT
+   =============================== */
+.account-content {
+  display: flex;
+  flex-wrap: wrap;
+  /* RESPONSIVE wrapping */
+  gap: 20px;
+  justify-content: flex-start;
+  align-items: flex-start;
+  padding: 10px 0;
+}
+
+/* Fixed card size - NEVER CHANGES */
+.info-card {
+  width: 280px;
+  /* constant size */
+  flex: 0 0 auto;
+  /* keeps size fixed */
+}
+
+/* Footer stays at bottom */
+.account-footer {
+  margin-top: auto;
+}
+
+/* Smaller screen → cards still wrap naturally */
+@media (max-width: 900px) {
+  .account-content {
+    justify-content: center;
+    /* nicely centered when fewer fit */
+  }
+}
+
+/* Very small screen → 1 card per row */
+@media (max-width: 500px) {
+  .info-card {
+    width: 100%;
+    /* full width ONLY on tiny mobile */
+    max-width: 320px;
+    margin: 0 auto;
+  }
+}
+
+/* ===== Fix vertical scroll for account page ===== */
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  /* enable vertical scroll */
+}
+
+.account-page {
+  flex: 1 0 auto;
+  /* allow page to grow */
+  max-height: 100vh;
+  /* limit to viewport height */
+  overflow-y: auto;
+  /* vertical scroll */
+}
+
+/* ==== Force single row on wide screens ==== */
+@media (min-width: 1200px) {
+  .account-content {
+    flex-wrap: nowrap !important;
+    /* all cards in one horizontal line */
+    overflow-x: auto;
+    /* horizontal scroll if needed */
+  }
+}

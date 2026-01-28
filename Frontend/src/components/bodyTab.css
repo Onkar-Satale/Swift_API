@@ -1,0 +1,233 @@
+/* ==== Options row container (horizontal layout) ==== */
+.body-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 1px;
+  margin-top: 7px;
+}
+
+/* ==== Custom Radio Buttons (Postman-like, with black/blue) ==== */
+.body-option {
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  color: #fff;
+}
+
+.body-option input[type="radio"] {
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  width: 14px;
+  height: 14px;
+  border: 1px solid #aaa;
+  border-radius: 50%;
+  background-color: #2b2b2b;
+  margin-right: 6px;
+  cursor: pointer;
+  position: relative;
+  display: inline-block;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+/* Checked (selected) state */
+.body-option input[type="radio"]:checked {
+  border-color: #007BFF;
+  background-color: #007BFF;
+}
+
+/* White inner dot when selected */
+.body-option input[type="radio"]:checked::after {
+  content: "";
+  width: 6px;
+  height: 6px;
+  background: #fff;
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* ==== JSON EDITOR WRAPPER ==== */
+/* IMPORTANT: AceEditor manages its own scroll */
+.json-editor {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  /* VERY IMPORTANT */
+  overflow: hidden;
+}
+
+
+/* ===================================================== */
+/* ===== SCROLLABLE ELEMENTS (EXCLUDING AceEditor) ===== */
+/* ===================================================== */
+
+.sidebar-large,
+.response-body,
+.history-list {
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding-right: 12px;
+}
+
+/* --- Webkit Scrollbars (Chrome, Edge, Safari) --- */
+.sidebar-large::-webkit-scrollbar,
+.response-body::-webkit-scrollbar,
+.history-list::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.sidebar-large::-webkit-scrollbar-track,
+.response-body::-webkit-scrollbar-track,
+.history-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-large::-webkit-scrollbar-thumb,
+.response-body::-webkit-scrollbar-thumb,
+.history-list::-webkit-scrollbar-thumb {
+  background-color: #888;
+  border-radius: 3px;
+}
+
+/* --- Firefox --- */
+.sidebar-large,
+.response-body,
+.history-list {
+  scrollbar-width: thin;
+  scrollbar-color: #343434 transparent;
+}
+
+/* --- IE / Edge legacy --- */
+.sidebar-large,
+.response-body,
+.history-list {
+  -ms-overflow-style: scrollbar;
+}
+
+/* ===================================================== */
+/* ===== ACE EDITOR SCROLLBAR (CORRECT WAY) ===== */
+/* ===================================================== */
+
+.ace_scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #313131 transparent;
+}
+
+/* Webkit */
+.ace_scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.ace_scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.ace_scrollbar::-webkit-scrollbar-thumb {
+  background-color: #555;
+  border-radius: 4px;
+}
+
+/* ==== No Body Hint ==== */
+.no-body-hint {
+  padding: 10px;
+  background-color: #2a2a2a;
+  color: #bbb;
+  font-size: 13px;
+  border: 1px dashed #555;
+  border-radius: 6px;
+  margin-top: 10px;
+  font-family: monospace;
+}
+
+/* no body text */
+.no-body-hint {
+  font-size: 14px;
+  color: #c0c0c0;
+}
+
+/* ==== Shared Hint Box Style ==== */
+.body-hint {
+  padding: 10px;
+  background-color: #2a2a2a;
+  color: #c0c0c0;
+  font-size: 14px;
+  border: 1px dashed #555;
+  border-radius: 6px;
+  margin-top: 10px;
+  font-family: monospace;
+  line-height: 1.4;
+}
+
+/* ==== No Body Hint (kept separate if you want different look) ==== */
+.no-body-hint {
+  padding: 10px;
+  background-color: #2a2a2a;
+  color: #d1d1d1;
+  font-size: 14px;
+  border: 1px dashed #555;
+  border-radius: 6px;
+  margin-top: 10px;
+  font-family: monospace;
+  line-height: 1.4;
+}
+
+
+.body-tab {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  /* 🔥 MOST IMPORTANT */
+}
+
+.json-editor {
+  flex: 1;
+  min-height: 0;
+  /* 🔥 MOST IMPORTANT */
+  display: flex;
+  flex-direction: column;
+}
+
+
+
+/* Main layout must have height */
+.layout {
+  height: 100vh;
+  display: flex;
+}
+
+/* App area */
+.app {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* Tabs content wrapper */
+.tab-content {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+/* Request area (BodyTab parent) */
+.request-area {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+.body-tab,
+.json-editor,
+.ace_editor {
+  width: 100%;
+}
