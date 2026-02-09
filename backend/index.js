@@ -9,6 +9,8 @@ import authRoutes from "./routes/auth.js";
 import userRoutes from "./routes/userRoutes.js";
 import historyRoutes from "./routes/history.js";
 import User from "./models/User.js";
+import genaiRoutes from "./routes/genai.js";
+
 
 const app = express();
 const SECRET = "MY_SECRET_KEY";
@@ -37,16 +39,20 @@ app.post("/api/request", async (req, res) => {
   try {
     // NEW: use a custom header for backend auth
     let userId = null;
-    const backendToken = req.headers['x-backend-token']; // <-- change here
+
+    // ✅ Try x-backend-token first, fallback to Authorization header
+    const backendToken = req.headers['x-backend-token'] || req.headers['authorization']?.split(' ')[1];
+
     if (backendToken) {
       try {
         const decoded = jwt.verify(backendToken, SECRET);
         userId = decoded.userId || decoded.id;
         console.log("Decoded userId for history:", userId);
       } catch (err) {
-        console.warn("Invalid backend token, proceeding as guest");
+        console.warn("Invalid token, proceeding as guest");
       }
     }
+
 
 
     const { url, method, headers, body } = req.body;
@@ -91,7 +97,7 @@ app.post("/api/request", async (req, res) => {
           },
         },
       });
-        console.log("Saved history for user:", userId, url);
+      console.log("Saved history for user:", userId, url);
     }
 
     res.json({

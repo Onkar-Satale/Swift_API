@@ -16,7 +16,14 @@ const verifyToken = (req, res, next) => {
 
     const token = authHeader.split(" ")[1];
     const decoded = jwt.verify(token, SECRET);
-    req.userId = decoded.userId;
+
+    // Support both 'userId' and 'id' in token payload
+    req.userId = decoded.userId || decoded.id;
+    if (!req.userId) {
+      console.error("Token decoded but no userId found:", decoded);
+      return res.status(401).json({ error: "Unauthorized: Invalid token payload" });
+    }
+
     next();
   } catch (err) {
     console.error("JWT verification error:", err.message);
@@ -28,11 +35,17 @@ const verifyToken = (req, res, next) => {
 router.get("/", verifyToken, async (req, res) => {
   try {
     console.log("Fetching history for user:", req.userId);
-    const user = await User.findById(req.userId);
-    if (!user) return res.status(404).json({ error: "User not found" });
 
-    // FIX: reverse history so newest first
-    const history = (user.history || []).slice().reverse();
+    const user = await User.findById(req.userId);
+    if (!user) {
+      console.warn("User not found for ID:", req.userId);
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Ensure history is always an array
+    const history = Array.isArray(user.history) ? user.history.slice().reverse() : [];
+    console.log("Fetched history length:", history.length);
+
     res.json(history);
   } catch (err) {
     console.error("Error fetching history:", err.message);
@@ -40,11 +53,11 @@ router.get("/", verifyToken, async (req, res) => {
   }
 });
 
-
 // DELETE: Delete single history item by ID
 router.delete("/:historyId", verifyToken, async (req, res) => {
   try {
     const { historyId } = req.params;
+
     const result = await User.findByIdAndUpdate(req.userId, {
       $pull: { history: { _id: historyId } },
     });

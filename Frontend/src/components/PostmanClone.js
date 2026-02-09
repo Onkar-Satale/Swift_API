@@ -58,6 +58,8 @@ export default function PostmanClone() {
   const [bodyType, setBodyType] = useState("none");
   const [rawBody, setRawBody] = useState('{\n  "example": "value"\n}');
   const [requestBody, setRequestBody] = useState(null);
+  const [apiContext, setApiContext] = useState(null);
+
 
 
 
@@ -221,9 +223,9 @@ export default function PostmanClone() {
 
     try {
       let bodyPayload;
-      if (["POST", "PUT", "PATCH", "DELETE"].includes(method) && bodyContent?.trim()) {
+      if (["POST", "PUT", "PATCH", "DELETE"].includes(method) && rawBody?.trim()) {
         try {
-          bodyPayload = JSON.parse(bodyContent);
+          bodyPayload = JSON.parse(rawBody);
         } catch (err) {
           setErrorMsg("Invalid JSON in body: " + err.message);
           setLoading(false);
@@ -257,7 +259,7 @@ export default function PostmanClone() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-backend-token": backendToken, // <-- change here
+          "Authorization": `Bearer ${backendToken}`, // ✅ use proper auth header
         },
         body: JSON.stringify({
           url: finalUrl,
@@ -279,6 +281,32 @@ export default function PostmanClone() {
 
         return;
       }
+
+
+      // ===============================
+      // 🤖 AI RESPONSE HANDLING
+      // ===============================
+      if (data.ai) {
+        setShowBot(true);
+        setMessages(prev => [
+          ...prev,
+          {
+            from: "bot",
+            text: `🧠 AI Analysis
+
+Diagnosis:
+${data.ai.diagnosis}
+
+Fix:
+${data.ai.fix}
+
+Suggested Tests:
+${(data.ai.tests || []).map(t => `• ${t}`).join("\n")}
+`
+          }
+        ]);
+      }
+
 
       const respBody = data.body ?? data;
       setRequestCount(prev => {
@@ -306,16 +334,21 @@ export default function PostmanClone() {
       setStatus(data.status ?? res.status ?? "OK");
       const statusCode = data.status ?? res.status;
 
-      if (statusCode >= 400 || status === "ERR" || status === "NETWORK_ERROR") {
-        setShowBot(true);
-        setMessages(prev => [
-          ...prev,
-          {
-            from: "bot",
-            text: getSmartHelpMessage(status, response)
-          }
-        ]);
-      }
+
+      // ===============================
+      // 🧠 SAVE API CONTEXT FOR AI BOT
+      // ===============================
+      const duration = Math.round(performance.now() - start);
+
+      setApiContext({
+        method,
+        url,
+        headers,
+        status: statusCode,
+        responseTime: duration,
+        response: respBody
+      });
+
 
 
       await loadUserHistory(); // refresh history after request
@@ -371,164 +404,73 @@ export default function PostmanClone() {
     setTimeout(() => toast.remove(), 1200);
   };
   const getSmartHelpMessage = (status = null, responseBody) => {
-    // No request yet
-    if (!status) {
-      return `ℹ️ No request sent yet
-Send an API request and I’ll explain errors if they occur.`;
-    }
+    if (!status) return { diagnosis: "ℹ️ No request sent yet", fix: "Send an API request and I’ll explain errors.", tests: [] };
 
-    // ---------------- AUTH ERRORS ----------------
-    if (status === 400) {
-      return `⚠️ 400 Bad Request
-Root cause:
-• Request syntax is invalid
-• Missing required fields
-• Malformed JSON body
+    if (status === 400) return {
+      diagnosis: "⚠️ 400 Bad Request: Request syntax invalid or missing fields",
+      fix: "Validate JSON format, check required parameters, match API schema exactly",
+      tests: ["Validate JSON schema", "Check required fields"]
+    };
 
-Fix:
-• Validate JSON format
-• Check required parameters
-• Match API schema exactly`;
-    }
+    if (status === 401) return {
+      diagnosis: "🚫 401 Unauthorized: Missing or invalid token",
+      fix: "Add Authorization header, refresh or regenerate token",
+      tests: ["Check token validity", "Ensure Bearer format"]
+    };
 
-    if (status === 401) {
-      return `🚫 401 Unauthorized
-Root cause:
-• Missing or invalid token
-• Token expired
+    if (status === 403) return {
+      diagnosis: "⛔ 403 Forbidden: Access denied",
+      fix: "Check user roles/permissions, correct API key, backend access rules",
+      tests: ["Verify user permissions", "Check API key"]
+    };
 
-Fix:
-• Add Authorization header
-• Refresh or regenerate token
-• Check Bearer format`;
-    }
+    if (status === 404) return {
+      diagnosis: "❓ 404 Not Found: Endpoint does not exist or typo in URL",
+      fix: "Verify endpoint URL and API version, confirm backend route",
+      tests: ["Check route exists", "Validate URL"]
+    };
 
-    if (status === 403) {
-      return `⛔ 403 Forbidden
-Root cause:
-• You are authenticated
-• But not allowed to access this resource
+    if (status === 405) return {
+      diagnosis: "🚫 405 Method Not Allowed",
+      fix: "Use correct HTTP method (GET/POST/PUT/DELETE)",
+      tests: ["Check allowed methods in backend"]
+    };
 
-Fix:
-• Check user roles/permissions
-• Use correct API key
-• Verify backend access rules`;
-    }
+    if (status === 409) return {
+      diagnosis: "🔁 409 Conflict: Resource already exists or duplicate submission",
+      fix: "Use PUT to update existing resource instead of POST",
+      tests: ["Check if resource exists before creating"]
+    };
 
-    // ---------------- ROUTE ERRORS ----------------
-    if (status === 404) {
-      return `❓ 404 Not Found
-Root cause:
-• Endpoint does not exist
-• Wrong API version
-• Typo in URL path
+    if (status === 422) return {
+      diagnosis: "📛 422 Unprocessable Entity: Validation failed",
+      fix: "Match backend validation rules, check payload types",
+      tests: ["Validate field types", "Check required fields"]
+    };
 
-Fix:
-• Verify endpoint URL
-• Check API documentation
-• Confirm backend route exists`;
-    }
+    if (status === 429) return {
+      diagnosis: "⏳ 429 Too Many Requests: Rate limit exceeded",
+      fix: "Slow down requests, implement retry with delay",
+      tests: ["Throttle requests", "Upgrade API plan if needed"]
+    };
 
-    if (status === 405) {
-      return `🚫 405 Method Not Allowed
-Root cause:
-• Endpoint exists
-• HTTP method not supported
+    if (status >= 500 && status < 600) return {
+      diagnosis: `🔥 ${status} Server Error`,
+      fix: "Check backend logs, retry after some time, contact backend team",
+      tests: ["Check server logs", "Retry request"]
+    };
 
-Fix:
-• Switch HTTP method (GET/POST/PUT/DELETE)
-• Check backend route definitions`;
-    }
+    if (status === "NETWORK_ERROR" || status === "ERR") return {
+      diagnosis: "🌐 Network / Client Error",
+      fix: "Check backend running, DevTools → Network tab, CORS issues",
+      tests: ["Verify server is running", "Check browser console for CORS"]
+    };
 
-    if (status === 409) {
-      return `🔁 409 Conflict
-Root cause:
-• Resource already exists
-• Duplicate data submission
-
-Fix:
-• Check if resource exists before creating
-• Use PUT instead of POST if updating`;
-    }
-
-    // ---------------- VALIDATION ERRORS ----------------
-    if (status === 422) {
-      return `📛 422 Unprocessable Entity
-Root cause:
-• Validation failed
-• Data types mismatch
-
-Fix:
-• Check request payload types
-• Validate required fields
-• Match backend validation rules`;
-    }
-
-    // ---------------- RATE & LIMITS ----------------
-    if (status === 429) {
-      return `⏳ 429 Too Many Requests
-Root cause:
-• API rate limit exceeded
-
-Fix:
-• Slow down requests
-• Implement retry with delay
-• Upgrade API plan if needed`;
-    }
-
-    // ---------------- SERVER ERRORS ----------------
-    if (status >= 500 && status < 600) {
-      return `🔥 ${status} Server Error
-Root cause:
-• Backend crashed
-• Database error
-• Unhandled exception
-
-Fix:
-• Check backend logs
-• Retry after some time
-• Contact backend team`;
-    }
-
-    // ---------------- NETWORK / FETCH FAIL ----------------
-    if (status === "NETWORK_ERROR") {
-      return `🌐 Network Error
-Root cause:
-• No internet
-• CORS blocked request
-• Backend server down
-
-Fix:
-• Check internet connection
-• Verify CORS settings
-• Ensure backend is running`;
-    }
-
-    if (status === "ERR") {
-      return `🌐 Network / Client Error (ERR)
-
-What happened:
-• Request never reached the server
-• No HTTP response received
-
-Common causes:
-• Backend server is down
-• CORS blocked the request
-• Internet connection issue
-• Wrong API proxy (/api/request)
-
-How to fix:
-• Check backend is running
-• Open DevTools → Network tab
-• Look for CORS or connection errors
-• Verify API base URL`;
-    }
-
-    // ---------------- SUCCESS ----------------
-    return `✅ Request Successful (${status})
-Tip:
-• Validate response structure
-• Save response for reuse`;
+    return {
+      diagnosis: `✅ Request Successful (${status})`,
+      fix: "Response received successfully",
+      tests: []
+    };
   };
 
 
@@ -686,59 +628,95 @@ Tip:
             </div>
             <div className="response-right" style={{ display: "flex", alignItems: "center", gap: "10px" }}>
               {status !== null && <span className={`status-badge status-${status}`}>{status}</span>}
+
               <button className="copy-btn" onClick={() => response && copyToClipboard(response)}>Copy</button>
+
               <button
+                type="button"   // ⭐ THIS IS REQUIRED
                 className="help-btn"
-                onClick={() => {
-                  console.log("HELP CLICKED");
-                  console.log("STATUS:", status);
-                  console.log("BOT MESSAGE:", getSmartHelpMessage(status, response));
+                onClick={async () => {
+                  if (!url) return;
+
                   setShowBot(true);
-                  setMessages(prev => [
-                    ...prev,
-                    { from: "bot", text: getSmartHelpMessage(status, response) }
-                  ]);
+
+                  try {
+                    const analyzeRes = await fetch("http://localhost:8001/analyze", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        method,
+                        url,
+                        headers: headersObj.reduce((acc, h) => {
+                          if (h.key) acc[h.key] = h.value;
+                          return acc;
+                        }, {}),
+                        body: requestBody || rawBody,
+                        status,
+                        response
+                      })
+                    });
+
+                    const analyzeData = await analyzeRes.json();
+
+                    if (analyzeData?.ai) {
+                      const { diagnosis, fix, tests } = analyzeData.ai;
+                      const aiText = `🤖 AI Analysis :\n\n\n${"\n\n"}${diagnosis}\n\nFix:\n${fix}\n\nSuggested Tests:\n${(tests || []).map(t => `• ${t}`).join("\n")}`;
+
+                      setMessages(prev => [
+                        ...prev,
+                        { from: "bot", text: aiText }
+                      ]);
+                    }
+                  } catch (err) {
+                    setMessages(prev => [
+                      ...prev,
+                      { from: "bot", text: `❌ LLM analysis failed: ${err.message}` }
+                    ]);
+                  }
                 }}
+
               >
                 Help
               </button>
 
             </div>
+
           </div>
           <div className="response-body" style={{ overflow: "auto", maxHeight: "585px" }}>
             {!response ? (
               <p>No response yet</p>
-            ) : viewMode === "pretty" ? (
-              <ReactJson
-                src={typeof response === "string" ? { raw: response } : response}
-                name={null}
-                collapsed={1}
-                enableClipboard={true}
-                displayDataTypes={false}
-                displayObjectSize={true}
-                theme="google"
-              />
-            ) : viewMode === "raw" ? (
-              <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
-                {typeof response === "string" ? response : JSON.stringify(response)}
-              </pre>
-            ) : viewMode === "preview" ? (
-              <div
-                style={{
-                  background: "#1e1e1e",
-                  color: "#fff",
-                  fontFamily: "monospace",
-                  whiteSpace: "pre-wrap",
-                  padding: "10px",
-                }}
-              >
-                <pre style={{ margin: 0, color: "#fff" }}>
-                  {typeof response === "string"
-                    ? response.replace(/\\n/g, "\n")
-                    : JSON.stringify(response, null, 2)}
+            )
+              : viewMode === "raw" ? (
+                <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-word" }}>
+                  {typeof response === "string" ? response : JSON.stringify(response)}
                 </pre>
-              </div>
-            ) : null}
+              ) : viewMode === "pretty" ? (
+                <ReactJson
+                  src={typeof response === "string" ? { raw: response } : response}
+                  name={null}
+                  collapsed={1}
+                  enableClipboard={true}
+                  displayDataTypes={false}
+                  displayObjectSize={true}
+                  theme="google"
+                />
+              ) : viewMode === "preview" ? (
+                <div
+                  style={{
+                    background: "#1e1e1e",
+                    color: "#fff",
+                    fontFamily: "monospace",
+                    whiteSpace: "pre-wrap",
+                    padding: "10px",
+                  }}
+                >
+                  <pre style={{ margin: 0, color: "#fff" }}>
+                    {typeof response === "string"
+                      ? response.replace(/\\n/g, "\n")
+                      : JSON.stringify(response, null, 2)}
+                  </pre>
+                </div>
+              ) : null}
           </div>
         </div>
       </div>
@@ -747,8 +725,12 @@ Tip:
           onClose={() => setShowBot(false)}
           messages={messages}
           setMessages={setMessages}
+          currentApiContext={apiContext}
+          setHeadersObj={setHeadersObj}
+          setActiveTab={setActiveTab} // optional
         />
       )}
+
 
 
     </div>

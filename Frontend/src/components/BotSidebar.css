@@ -213,3 +213,38 @@
     transform: translateY(0);
   }
 }
+
+.curl-box {
+  background: #161617;
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 6px;
+  position: relative;
+  font-family: monospace;
+  color: #e5e7eb;
+}
+
+.curl-box pre {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.copy-btn2 {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: #00aa03;
+  border: none;
+  color: #ffffff;
+  padding: 2px 5px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.copy-btn2:hover {
+  opacity: 0.9;
+  background: #008802;
+
+}
