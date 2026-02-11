@@ -59,6 +59,8 @@ export default function PostmanClone() {
   const [rawBody, setRawBody] = useState('{\n  "example": "value"\n}');
   const [requestBody, setRequestBody] = useState(null);
   const [apiContext, setApiContext] = useState(null);
+  const [aiLoading, setAiLoading] = useState(false);
+
 
 
 
@@ -286,26 +288,9 @@ export default function PostmanClone() {
       // ===============================
       // 🤖 AI RESPONSE HANDLING
       // ===============================
-      if (data.ai) {
-        setShowBot(true);
-        setMessages(prev => [
-          ...prev,
-          {
-            from: "bot",
-            text: `🧠 AI Analysis
 
-Diagnosis:
-${data.ai.diagnosis}
 
-Fix:
-${data.ai.fix}
 
-Suggested Tests:
-${(data.ai.tests || []).map(t => `• ${t}`).join("\n")}
-`
-          }
-        ]);
-      }
 
 
       const respBody = data.body ?? data;
@@ -340,14 +325,16 @@ ${(data.ai.tests || []).map(t => `• ${t}`).join("\n")}
       // ===============================
       const duration = Math.round(performance.now() - start);
 
-      setApiContext({
+      setApiContext(prev => ({
+        ...prev,
         method,
         url,
         headers,
         status: statusCode,
         responseTime: duration,
-        response: respBody
-      });
+        response: respBody || { error: "No response body available" } // 🔹 fallback
+      }));
+
 
 
 
@@ -630,54 +617,16 @@ ${(data.ai.tests || []).map(t => `• ${t}`).join("\n")}
               {status !== null && <span className={`status-badge status-${status}`}>{status}</span>}
 
               <button className="copy-btn" onClick={() => response && copyToClipboard(response)}>Copy</button>
-
               <button
-                type="button"   // ⭐ THIS IS REQUIRED
-                className="help-btn"
-                onClick={async () => {
+                type="button"
+                onClick={() => {
                   if (!url) return;
-
                   setShowBot(true);
-
-                  try {
-                    const analyzeRes = await fetch("http://localhost:8001/analyze", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({
-                        method,
-                        url,
-                        headers: headersObj.reduce((acc, h) => {
-                          if (h.key) acc[h.key] = h.value;
-                          return acc;
-                        }, {}),
-                        body: requestBody || rawBody,
-                        status,
-                        response
-                      })
-                    });
-
-                    const analyzeData = await analyzeRes.json();
-
-                    if (analyzeData?.ai) {
-                      const { diagnosis, fix, tests } = analyzeData.ai;
-                      const aiText = `🤖 AI Analysis :\n\n\n${"\n\n"}${diagnosis}\n\nFix:\n${fix}\n\nSuggested Tests:\n${(tests || []).map(t => `• ${t}`).join("\n")}`;
-
-                      setMessages(prev => [
-                        ...prev,
-                        { from: "bot", text: aiText }
-                      ]);
-                    }
-                  } catch (err) {
-                    setMessages(prev => [
-                      ...prev,
-                      { from: "bot", text: `❌ LLM analysis failed: ${err.message}` }
-                    ]);
-                  }
                 }}
-
               >
                 Help
               </button>
+
 
             </div>
 
@@ -728,6 +677,8 @@ ${(data.ai.tests || []).map(t => `• ${t}`).join("\n")}
           currentApiContext={apiContext}
           setHeadersObj={setHeadersObj}
           setActiveTab={setActiveTab} // optional
+          setShowBot={setShowBot} // 🔹 PASS IT HERE
+
         />
       )}
 

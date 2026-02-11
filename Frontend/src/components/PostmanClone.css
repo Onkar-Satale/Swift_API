@@ -553,3 +553,32 @@ body {
   background: #0d0d0d;
   border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
+
+
+
+
+
+
+
+/* Help Button Styling */
+.response-right button:last-child {
+  background: linear-gradient(135deg, #ff8810, #ff6a00);
+  color: white;
+  border: none;
+  padding: 4px 20px;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+
+}
+
+.response-right button:last-child:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 136, 16, 0.4);
+}
+
+.response-right button:last-child:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

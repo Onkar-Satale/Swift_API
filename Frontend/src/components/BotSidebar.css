@@ -101,7 +101,7 @@
 }
 
 .bot-panel button {
-  background: #ff7f00;
+  background: #e07408;
   /* orange theme */
   border: none;
   color: white;
@@ -113,7 +113,7 @@
 }
 
 .bot-panel button:hover {
-  background: #e66e00;
+  background: #b35600;
 }
 
 /* BODY */
@@ -247,4 +247,64 @@
   opacity: 0.9;
   background: #008802;
 
+}
+
+
+
+
+
+
+
+
+
+
+.bot-section-title {
+  font-weight: 700;
+  font-size: 14.5px;
+  margin-top: 10px;
+  margin-bottom: 4px;
+  padding: 4px 6px;          /* reduced padding */
+  border-left: 2px solid transparent; /* fixed */
+  border-radius: 4px;
+  cursor: default;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.15s ease;
+
+  color: #e27910;
+}
+
+
+/* Hover effect */
+.bot-section-title:hover {
+  background-color: rgba(255, 127, 0, 0.05);
+  border-left-color: #ff7f00;
+  transform: translateX(1px);
+}
+
+
+
+/* Normal text */
+.bot-text-line {
+  font-size: 13.5px;
+  line-height: 1.5;
+  padding-left: 6px; /* reduced from 11px */
+}
+
+.bot-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 999;
+}
+
+.bot-sidebar {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  width: 380px;
+  background: #1e1e1e;
+  z-index: 1000;
 }

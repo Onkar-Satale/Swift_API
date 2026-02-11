@@ -10,7 +10,8 @@ export default function BotSidebar({
   // Pass latest API request/response from Home page
   currentApiContext = null,
   setHeadersObj = null,    // 🔹 new
-  setActiveTab = null      // 🔹 optional, to switch tab automatically
+  setActiveTab = null,     // 🔹 optional, to switch tab automatically
+  setShowBot // 🔹 ADD THIS
 }) {
 
   const [input, setInput] = useState("");
@@ -18,6 +19,25 @@ export default function BotSidebar({
   const panelRef = useRef(null);
   const botBodyRef = useRef(null);
   const [copiedIndex, setCopiedIndex] = useState(null);
+  const [featureLoading, setFeatureLoading] = useState(false);
+
+
+
+  useEffect(() => {
+    if (botBodyRef.current) {
+      botBodyRef.current.scrollTo({
+        top: botBodyRef.current.scrollHeight,
+        behavior: "smooth",
+      });
+    }
+  }, [messages]);
+
+
+
+
+
+
+
 
 
 
@@ -235,6 +255,12 @@ export default function BotSidebar({
         output = statusCodeEducator(getStatusCode());
         break;
 
+      case "Smart Error Translator":
+        handleAnalyzeFeature("smart_error_translator");
+        setShowPanel(false);
+        return;
+
+
 
       default:
         setInput(action);
@@ -245,6 +271,7 @@ export default function BotSidebar({
 
     setMessages((prev) => [...prev, { from: "bot", text: output }]);
     setShowPanel(false);
+
   };
 
   useEffect(() => {
@@ -257,6 +284,77 @@ export default function BotSidebar({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showPanel]);
 
+
+  // 🔹 NEW: Call GenAI /analyze endpoint for a specific feature
+  const handleAnalyzeFeature = async (feature) => {
+    if (!currentApiContext) {
+      setMessages(prev => [
+        ...prev,
+        { from: "bot", text: "⚠️ No API context available for analysis." }
+      ]);
+      return;
+    }
+
+    if (featureLoading) return; // prevent spam clicks
+    setShowPanel(false);
+    setFeatureLoading(true);
+
+    const payload = {
+      method: currentApiContext.method,
+      url: currentApiContext.url,
+      headers: currentApiContext.headers,
+      body: currentApiContext.body,
+      status: currentApiContext.status,
+      response: currentApiContext.response
+        ? JSON.stringify(currentApiContext.response).slice(0, 2000)
+        : "No response body available"
+          ? JSON.stringify(currentApiContext.response).slice(0, 2000)
+          : "No response body available",
+      feature: feature
+    };
+
+    try {
+      const res = await fetch("http://localhost:8001/analyze", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+      const textToDisplay = data.text || "⚠️ Explanation unavailable.";
+
+      setMessages(prev => [
+        ...prev,
+        { from: "bot", text: textToDisplay }
+      ]);
+
+    } catch (err) {
+      setMessages(prev => [
+        ...prev,
+        { from: "bot", text: `❌ Error calling ${feature}: ${err.message}` }
+      ]);
+    } finally {
+      setFeatureLoading(false);
+
+    }
+  };
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (!event.target.closest(".bot-sidebar")) {
+        setShowBot(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleOutsideClick);
+
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    };
+  }, [setShowBot]);
+
+
+
+
   return (
     <div className="bot-sidebar">
       {/* HEADER */}
@@ -267,25 +365,40 @@ export default function BotSidebar({
             <span></span>
             <span></span>
           </div>
-          <h3 style={{ color: "#ff8912", fontWeight: "bold" }}>J.A.R.V.I.S.</h3>
+          <h3 style={{ color: "#ff8810", fontWeight: "bold" }}>JARVIS is here to HELP !</h3>
         </div>
         <button className="close-btn" onClick={onClose}>✖</button>
       </div>
 
       {/* PANEL */}
       <div ref={panelRef} className={`bot-panel ${showPanel ? "open" : ""}`}>
-        <h4>Tools & Actions</h4>
-        <button onClick={() => handleOptionClick("Root-Cause Analysis")}>Root-Cause Analysis</button>
-        <button onClick={() => handleOptionClick("Generate Workflow")}>Generate Workflow</button>
-        <button onClick={() => handleOptionClick("Contract Drift Check")}>Contract Drift Check</button>
+        <h3>Tools & Actions : </h3>
+        <h4>Advance Tools :</h4>
+        <button
+          onClick={() => handleAnalyzeFeature("Root Cause")}
+        >
+          Root-Cause Analysis
+        </button>
 
-        <hr />
 
+        <button
+          onClick={() => handleOptionClick("Smart Error Translator")}
+        >
+          Smart Error Translator
+        </button>
+
+        <h4>Basic Tools :</h4>
         <button onClick={() => handleOptionClick("Copy cURL")}>Copy cURL</button>
         <button onClick={() => handleOptionClick("Auto-fill Headers")}>Auto-fill Headers</button>
         <button onClick={() => handleOptionClick("Severity Badge")}>Severity Badge</button>
         <button onClick={() => handleOptionClick("Response Time Insight")}>Response Time Insight</button>
         <button onClick={() => handleOptionClick("Status Code Educator")}>Status Code Educator</button>
+        {/* 🔹 NEW LLM FEATURE BUTTONS */}
+        <button onClick={() => handleAnalyzeFeature("Header Checker")}>Header Silly Mistakes</button>
+        <button onClick={() => handleAnalyzeFeature("Retry Advice")}>Retry Recommendation</button>
+        <button onClick={() => handleAnalyzeFeature("API Tips")}>API Usage Tips</button>
+        <button onClick={() => handleAnalyzeFeature("Security Judge")}>Security Judge</button>
+        <button onClick={() => handleAnalyzeFeature("Response Time Insight")}>Advanced Response Time</button>
       </div>
 
       {/* CHAT */}
@@ -294,7 +407,7 @@ export default function BotSidebar({
           <div key={i} className={`bot-message ${msg.from}`}>
 
             {/* 🔹 cURL MESSAGE */}
-            {msg.type === "curl" ? (
+            {msg.type === "curl" && (
               <div className="curl-box">
                 <pre>{formatCurlForDisplay(msg.text)}</pre>
                 <button
@@ -303,25 +416,73 @@ export default function BotSidebar({
                     const match = msg.text.match(/"(https?:\/\/[^"]+)"/);
                     if (match) {
                       navigator.clipboard.writeText(match[1]);
-                      setCopiedIndex(i); // mark this message as copied
-
-                      // reset after 2 seconds
+                      setCopiedIndex(i);
                       setTimeout(() => setCopiedIndex(null), 2100);
                     }
                   }}
                 >
                   {copiedIndex === i ? "Copied!" : "Copy URL"}
                 </button>
-
               </div>
-            ) : (
-              msg.text.split("\n").map((line, idx) => (
-                <div key={idx}>{line}</div>
-              ))
             )}
+
+            {/* 🔹 USER MESSAGE (string) */}
+            {msg.from === "user" && (
+              <div>{String(msg.text)}</div>
+            )}
+
+            {/* 🔹 BOT MESSAGE (OBJECT or STRING SAFE) */}
+            {msg.from === "bot" && msg.type !== "curl" && (
+              typeof msg.text === "string" ? (
+                msg.text
+                  .split("\n")
+                  .filter(line => !/^(Fix:|Suggested Tests:)\s*$/.test(line.trim()))
+                  .reduce((acc, line) => {
+                    if (line.trim() === "") {
+                      // prevent multiple empty spacers
+                      if (acc.length === 0 || acc[acc.length - 1] === "__EMPTY__") {
+                        return acc;
+                      }
+                      return [...acc, "__EMPTY__"];
+                    }
+                    return [...acc, line];
+                  }, [])
+                  .map((line, idx) =>
+                    line === "__EMPTY__" ? (
+                      <div key={idx} style={{ height: 10 }} />
+                    ) : (
+                      <div
+                        key={idx}
+                        className={
+                          line.startsWith("🧠 Diagnosis") ||
+                            line.startsWith("📌 Summary") ||
+                            line.startsWith("🚀 Suggestions")
+                            ? "bot-section-title"
+                            : "bot-text-line"
+                        }
+                      >
+                        {line.replace("[TITLE]", "").replace("[/TITLE]", "")}
+                      </div>
+                    )
+                  )
+
+
+              ) : (
+                <>
+                  {msg.text?.diagnosis && (
+                    <>
+                      <div>🧠 Diagnosis</div>
+                      <div style={{ marginBottom: 12 }}>{msg.text.diagnosis}</div>
+                    </>
+                  )}
+                </>
+              )
+            )}
+
 
           </div>
         ))}
+
       </div>
 
 
