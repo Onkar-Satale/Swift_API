@@ -29,6 +29,56 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ---------------- SHORT RESPONSE RULE ----------------
+# ---------------- SHORT RESPONSE RULE ----------------
+# ---------------- SHORT RESPONSE RULE ----------------
+SHORT_RULE = """
+IMPORTANT RESPONSE GUIDELINES:
+
+- Keep total response between 180–250 words
+- Provide moderate detail (not too brief, not too long)
+- Use 4–6 bullet points if helpful
+- Each explanation can be 2–3 lines if needed
+- Be clear and structured
+- Focus on practical insights and reasoning
+- Avoid unnecessary repetition
+- Avoid dramatic or emotional filler
+- Maintain a professional but friendly tone
+- Ensure the response feels complete, not compressed
+"""
+
+
+# ---------------- ERROR TRANSLATOR RULE ----------------
+ERROR_RULE = """
+IMPORTANT RESPONSE RULES:
+
+- Keep response under 250 words
+- Explain the error in simple, non-scary language
+- Clearly state what caused it
+- Give 4–5 practical fix steps
+- Avoid technical overload
+- Avoid dramatic or alarming wording
+- Be calm, reassuring, and supportive
+- Do not repeat the raw error message fully
+- Keep format clean and easy to read
+"""
+
+GLOBAL_STYLE_RULE = """
+STYLE REQUIREMENTS (MANDATORY):
+
+- Use emojis in section titles and key insights
+- Add relevant emojis naturally (not spammy)
+- Use clear section headers
+- Separate sections with ONE empty line
+- Use bullet points with "•"
+- Make response visually structured and attractive
+- Avoid large text blocks
+- Keep formatting consistent
+- Do NOT return JSON
+"""
+
+
+
 
 # ---------------- Pydantic Models ----------------
 class AnalyzeRequest(BaseModel): 
@@ -60,16 +110,25 @@ def smart_error_translator(req: AnalyzeRequest):
 
     # Build a prompt for the LLM
     prompt = f"""
-You are an expert API assistant. 
+You are a calm and supportive API assistant.
+
+{ERROR_RULE}
 
 Translate the following API response/error into very simple English
-so that a junior developer or beginner can understand it.
-Explain the cause of the error and what they can do to fix it.
-Keep it friendly, clear, and emoji-rich.
+so that a junior developer can understand it easily.
+
+Explain:
+- What happened
+- Why it likely happened
+- What they can do to fix it
+
+Keep the tone reassuring and confident.
+Do NOT make the error sound scary.
 
 API Response:
 {error_content}
 """
+
 
     try:
         client = Groq(api_key=GROQ_API_KEY)
@@ -108,9 +167,115 @@ def analyze(req: AnalyzeRequest):
     if req.feature == "smart_error_translator":
         # Returns {"type": "smart_error_translator", "text": "..."}
         return smart_error_translator(req)
+    elif req.feature == "header_silly_mistakes":
+        prompt = f"""
+You are an API Header Inspector.
+
+Rules:
+- If headers are empty, clearly say: "No headers were provided."
+- If headers are present and no issues are found, say: "No header issues detected."
+- If issues exist, list them clearly using bullet points.
+
+Only detect:
+• Header spelling mistakes
+• Wrong capitalization
+• Duplicate headers
+• Invalid header format
+
+Do NOT analyze response.
+Do NOT give general API advice.
+
+Headers:
+{req.headers}
+"""
+
+    elif req.feature == "retry_recommendation":
+        prompt = f"""
+You are a retry strategy expert.
+
+{SHORT_RULE}
+
+Based only on status code and response,
+decide whether this request should be retried.
+
+Return:
+• Retry or Not
+• Reason
+• Suggested retry method (if needed)
+
+Status Code: {req.status}
+Response:
+{req.response}
+"""
+
+    elif req.feature == "api_usage_tips":
+        
+        prompt = f"""
+You are an API usage optimizer.
+
+{SHORT_RULE}
+{GLOBAL_STYLE_RULE}
+
+Give only improvement tips.
+
+Focus on:
+• Pagination
+• Filtering
+• Payload optimization
+• Best practices
+
+Request:
+Method: {req.method}
+URL: {req.url}
+Headers: {req.headers}
+Body: {req.body}
+"""
+
+    elif req.feature == "security_judge":
+        prompt = f"""
+You are a strict API security auditor.
+
+{SHORT_RULE}
+{GLOBAL_STYLE_RULE}
+
+Check for:
+• Missing authentication
+• Exposed API keys
+• HTTP instead of HTTPS
+• Sensitive data leaks
+• Insecure headers
+
+Return only security findings.
+
+Request:
+URL: {req.url}
+Headers: {req.headers}
+Body: {req.body}
+Response:
+{req.response}
+"""
+
+    elif req.feature == "advanced_response_time":
+        prompt = f"""
+You are an API performance analyst.
+
+{SHORT_RULE}
+{GLOBAL_STYLE_RULE}
+
+Analyze performance and response time deeply.
+
+Return:
+• Performance evaluation
+• Possible bottlenecks
+• Backend vs Network guess
+• Optimization suggestions
+
+Status Code: {req.status}
+"""
 
     # ---------------- OTHER LLM ANALYSIS ----------------
-    prompt = f"""
+    else:
+        prompt = f"""
 You are J.A.R.V.I.S. 🤖✨ — a smart, friendly API assistant.
 
 Your response must be:
@@ -129,6 +294,8 @@ FORMAT RULES (VERY IMPORTANT):
 - Use bullet points with "•" (NOT *, NOT -)
 - Do NOT repeat section titles
 - If a section has no content, SKIP IT
+
+
 
 STRUCTURE YOUR RESPONSE EXACTLY LIKE THIS:
 
@@ -171,7 +338,7 @@ Response Body: {req.response}
                 {"role": "user", "content": prompt}
             ],
             temperature=0.5,
-            max_completion_tokens=700
+            max_completion_tokens=400
         )
         ai_text_raw = res.choices[0].message.content
 

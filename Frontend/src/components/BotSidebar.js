@@ -375,7 +375,7 @@ export default function BotSidebar({
         <h3>Tools & Actions : </h3>
         <h4>Advance Tools :</h4>
         <button
-          onClick={() => handleAnalyzeFeature("Root Cause")}
+          onClick={() => handleAnalyzeFeature("root_cause")}
         >
           Root-Cause Analysis
         </button>
@@ -394,11 +394,11 @@ export default function BotSidebar({
         <button onClick={() => handleOptionClick("Response Time Insight")}>Response Time Insight</button>
         <button onClick={() => handleOptionClick("Status Code Educator")}>Status Code Educator</button>
         {/* 🔹 NEW LLM FEATURE BUTTONS */}
-        <button onClick={() => handleAnalyzeFeature("Header Checker")}>Header Silly Mistakes</button>
-        <button onClick={() => handleAnalyzeFeature("Retry Advice")}>Retry Recommendation</button>
-        <button onClick={() => handleAnalyzeFeature("API Tips")}>API Usage Tips</button>
-        <button onClick={() => handleAnalyzeFeature("Security Judge")}>Security Judge</button>
-        <button onClick={() => handleAnalyzeFeature("Response Time Insight")}>Advanced Response Time</button>
+        <button onClick={() => handleAnalyzeFeature("header_silly_mistakes")}>Header Silly Mistakes</button>
+        <button onClick={() => handleAnalyzeFeature("retry_recommendation")}>Retry Recommendation</button>
+        <button onClick={() => handleAnalyzeFeature("api_usage_tips")}>API Usage Tips</button>
+        <button onClick={() => handleAnalyzeFeature("security_judge")}>Security Judge</button>
+        <button onClick={() => handleAnalyzeFeature("advanced_response_time")}>Advanced Response Time</button>
       </div>
 
       {/* CHAT */}
