@@ -1,10 +1,12 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect,useContext } from "react";
 import "./BotSidebar.css";
+import { PostmanContext } from "../context/PostmanContext";
+
 
 export default function BotSidebar({
   onClose,
-  messages,
-  setMessages,
+  // messages,
+  // setMessages,
 
   // 🔹 ADDED (does NOT break existing usage)
   // Pass latest API request/response from Home page
@@ -20,6 +22,8 @@ export default function BotSidebar({
   const botBodyRef = useRef(null);
   const [copiedIndex, setCopiedIndex] = useState(null);
   const [featureLoading, setFeatureLoading] = useState(false);
+  const { messages, setMessages } = useContext(PostmanContext);
+
 
 
 

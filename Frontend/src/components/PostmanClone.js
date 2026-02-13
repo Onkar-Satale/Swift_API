@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useContext } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import ReactJson from "react-json-view";
 import { RequestContext } from "../context/RequestContext";
@@ -13,53 +13,92 @@ import "./PostmanClone.css";
 import RequestBar from "./RequestBar";
 import BotSidebar from "./BotSidebar";
 import AuthorizationTab from "./AuthorizationTab";
+import { useContext } from "react";
+import { PostmanContext } from "../context/PostmanContext"; // 🔹 add this
+
 
 
 
 
 export default function PostmanClone() {
-  const [method, setMethod] = useState("GET");
+  const {
+    method, setMethod,
+    url, setUrl,
+    headersObj, setHeadersObj,
+    paramsObj, setParamsObj,
+    rawBody, setRawBody,
+    activeTab, setActiveTab,
+    response, setResponse,
+    status, setStatus,
+    messages, setMessages,
+    auth, setAuth // 🔹 ADD THIS
+  } = useContext(PostmanContext);
+
+  // const [method, setMethod] = useState("GET");
   const [currentUserId, setCurrentUserId] = useState(null);
-  const [url, setUrl] = useState("");
-  const [response, setResponse] = useState("");
-  const [status, setStatus] = useState(null);
-  const [activeTab, setActiveTab] = useState("Params");
+  // const [url, setUrl] = useState("");
+  // const [response, setResponse] = useState("");
+  // const [status, setStatus] = useState(null);
+  // const [activeTab, setActiveTab] = useState("Params");
   const [history, setHistory] = useState([]);
   const [activePanel, setActivePanel] = useState(null);
   const [viewMode, setViewMode] = useState("pretty");
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [bodyContent, setBodyContent] = useState("");
-  const [headersObj, setHeadersObj] = useState([
-    { key: "", value: "" }
-  ]);
+  // const [headersObj, setHeadersObj] = useState([
+  //   { key: "", value: "" }
+  // ]);
   const { setRequestCount } = useContext(RequestContext);
 
   const navigate = useNavigate();
   const responseRef = useRef(null);
   const [responseHeight, setResponseHeight] = useState(300); // default height 300px
-  const [paramsObj, setParamsObj] = useState([
-    { key: "", value: "", description: "" }
-  ]);
+  // const [paramsObj, setParamsObj] = useState([
+  //   { key: "", value: "", description: "" }
+  // ]);
   const [showBot, setShowBot] = useState(false);
-  const [messages, setMessages] = useState([
-    {
-      from: "bot",
-      text: "Hi 👋 I’m your API assistant. Send a request and I’ll explain errors, fixes, and next steps."
-    }
-  ]);
+  // const [messages, setMessages] = useState([
+  //   {
+  //     from: "bot",
+  //     text: "Hi 👋 I’m your API assistant. Send a request and I’ll explain errors, fixes, and next steps."
+  //   }
+  // ]);
 
-  const [auth, setAuth] = useState({
-    type: "none",
-    token: "",
-    username: "",
-    password: "",
-  });
+
+  // 🔹 Sync auth to headersObj automatically
+  useEffect(() => {
+    if (auth.type === "bearer" && auth.token) {
+      setHeadersObj(prev => {
+        const otherHeaders = prev.filter(h => h.key !== "Authorization");
+        return [
+          ...otherHeaders,
+          { key: "Authorization", value: `Bearer ${auth.token}` },
+          ...prev.filter(h => h.key === ""), // keep empty row
+        ];
+      });
+    } else if (auth.type === "basic" && auth.username && auth.password) {
+      const encoded = btoa(`${auth.username}:${auth.password}`);
+      setHeadersObj(prev => {
+        const otherHeaders = prev.filter(h => h.key !== "Authorization");
+        return [
+          ...otherHeaders,
+          { key: "Authorization", value: `Basic ${encoded}` },
+          ...prev.filter(h => h.key === ""),
+        ];
+      });
+    } else if (auth.type === "none") {
+      // Remove Authorization header if no auth selected
+      setHeadersObj(prev => prev.filter(h => h.key !== "Authorization"));
+    }
+  }, [auth, setHeadersObj]);
+
   const [bodyType, setBodyType] = useState("none");
-  const [rawBody, setRawBody] = useState('{\n  "example": "value"\n}');
+  // const [rawBody, setRawBody] = useState('{\n  "example": "value"\n}');
   const [requestBody, setRequestBody] = useState(null);
   const [apiContext, setApiContext] = useState(null);
   const [aiLoading, setAiLoading] = useState(false);
+
 
 
 
@@ -143,16 +182,30 @@ export default function PostmanClone() {
     loadUserHistory(); // fetch history
 
     // Only clear response, keep last request data intact
-    setResponse("");
-    setStatus(null);
+    if (!lastResponse) setResponse("");
+    if (!lastResponse) setStatus(null);
 
     // Prefill last request if it exists
     if (lastRequest) {
       setMethod(lastRequest.method || "GET");
       setUrl(lastRequest.url || "");
       setBodyContent(lastRequest.body ? JSON.stringify(lastRequest.body, null, 2) : "");
+
+      // 🔹 Initialize apiContext for BotSidebar
+      setApiContext({
+        method: lastRequest.method || "GET",
+        url: lastRequest.url || "",
+        headers: headersObj.reduce((acc, h) => {
+          if (h.key) acc[h.key] = h.value;
+          return acc;
+        }, {}),
+        status: lastRequest.status ?? "OK",
+        responseTime: 0, // optional, last request time unknown
+        response: lastResponse || { error: "No response available" }
+      });
     }
   }, []);
+
 
 
 
@@ -293,7 +346,7 @@ export default function PostmanClone() {
 
 
 
-      const respBody = data.body ?? data;
+      const respBody = data.body ?? data.result ?? data;
       setRequestCount(prev => {
         const newCount = prev + 1;
         const currentUserId = localStorage.getItem("currentUserId");
@@ -325,15 +378,15 @@ export default function PostmanClone() {
       // ===============================
       const duration = Math.round(performance.now() - start);
 
-      setApiContext(prev => ({
-        ...prev,
+      setApiContext({
         method,
         url,
         headers,
         status: statusCode,
         responseTime: duration,
-        response: respBody || { error: "No response body available" } // 🔹 fallback
-      }));
+        response: respBody || { error: "No response body available" }
+      });
+
 
 
 

@@ -9,6 +9,8 @@ import ContactSupport from "./components/ContactSupport";
 import { useState, useEffect } from "react";
 import { RequestContext } from "./context/RequestContext";
 import { getToken } from "./services/authService";
+import { PostmanProvider } from "./context/PostmanContext"; // 🔹 add this
+
 
 export default function App() {
   const [requestCount, setRequestCount] = useState(0);
@@ -40,26 +42,30 @@ export default function App() {
 
   return (
     <RequestContext.Provider value={{ requestCount, setRequestCount, setCurrentUserId }}>
-      <Router>
-        <Routes>
-          {/* Public routes */}
-          <Route path="/" element={<PostmanClone />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/documentation" element={<Documentation />} />
-          <Route path="/contact-support" element={<ContactSupport />} />
+      <PostmanProvider>  {/* 🔹 wrap here */}
 
-          {/* Protected routes */}
-          <Route
-            path="/account"
-            element={
-              <ProtectedRoute>
-                <AccountPage />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
-      </Router>
+        <Router>
+          <Routes>
+            {/* Public routes */}
+            <Route path="/" element={<PostmanClone />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/documentation" element={<Documentation />} />
+            <Route path="/contact-support" element={<ContactSupport />} />
+
+            {/* Protected routes */}
+            <Route
+              path="/account"
+              element={
+                <ProtectedRoute>
+                  <AccountPage />
+                </ProtectedRoute>
+              }
+            />
+          </Routes>
+        </Router>
+      </PostmanProvider>
+
     </RequestContext.Provider>
   );
 }
