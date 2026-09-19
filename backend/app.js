@@ -18,7 +18,6 @@ import aiRoutes from './routes/aiRoute.js';
 import { proxyRequestHandler } from './controllers/requestController.js';
 import { requestProxyValidator } from './validators/requestValidator.js';
 import auth from './middlewares/authMiddleware.js';
-import sanitizeMiddleware from './middlewares/sanitizeMiddleware.js';
 
 const app = express();
 
@@ -47,7 +46,6 @@ app.use(cors({
 // Body parsing and request logging
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
-app.use(sanitizeMiddleware);
 app.use(cookieParser());
 app.use(morgan("dev"));
 

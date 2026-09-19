@@ -1,9 +1,9 @@
 import { body, validationResult } from 'express-validator';
 import { ApiError } from '../utils/ApiError.js';
 
-/**
- * Common middleware function that evaluates express-validator validation chains.
- * Forwards an operational 400 ApiError if validation constraints fail.
+/*
+ Common middleware function that evaluates express-validator validation chains.
+ Forwards an operational 400 ApiError if validation constraints fail.
  */
 export const validateRequest = (req, res, next) => {
   const errors = validationResult(req);

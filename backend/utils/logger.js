@@ -1,29 +1,30 @@
 /**
- * Winston Logging Module
- * Configures application logging directly to the console with timestamps, colors, and formatted stack traces.
+ * Application Logger
+ * Native lightweight console logger with timestamps and log levels.
  */
 
-import winston from 'winston';
+const formatMessage = (level, message, ...args) => {
+  const timestamp = new Date().toISOString().replace('T', ' ').slice(0, 19);
+  return [`[${timestamp}] ${level.toUpperCase()}:`, message, ...args];
+};
 
-const logger = winston.createLogger({
-  level: process.env.LOG_LEVEL || "info",
-  format: winston.format.combine(
-    winston.format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
-    winston.format.errors({ stack: true }),
-    winston.format.splat(),
-    winston.format.colorize(),
-    winston.format.printf(({ level, message, timestamp, stack }) => {
-      if (stack) {
-        return `[${timestamp}] ${level}: ${message}\n${stack}`;
-      }
-      return `[${timestamp}] ${level}: ${message}`;
-    })
-  ),
-  defaultMeta: { service: "swift-api" },
-  transports: [
-    new winston.transports.Console(),
-  ],
-});
+const logger = {
+  info: (message, ...args) => {
+    console.log(...formatMessage('info', message, ...args));
+  },
+  warn: (message, ...args) => {
+    console.warn(...formatMessage('warn', message, ...args));
+  },
+  error: (message, ...args) => {
+    console.error(...formatMessage('error', message, ...args));
+  },
+  debug: (message, ...args) => {
+    if (process.env.LOG_LEVEL === 'debug') {
+      console.debug(...formatMessage('debug', message, ...args));
+    }
+  },
+};
 
 export default logger;
+
 
