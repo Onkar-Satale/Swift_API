@@ -1,12 +1,20 @@
-import { authFetch } from "./authService";
+import { authFetch, getToken } from "./authService";
 
 const HISTORY_API = `${process.env.REACT_APP_BACKEND_URL}/api/history`;
 
 export const getHistory = async () => {
   try {
+    if (!getToken()) {
+      return [];
+    }
+
     const res = await authFetch(`${HISTORY_API}?t=${Date.now()}`, {
       cache: "no-store",
     });
+
+    if (res.status === 401) {
+      return [];
+    }
 
     if (!res.ok) throw new Error(`Failed to fetch history: ${res.status}`);
     return await res.json();

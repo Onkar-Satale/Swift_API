@@ -253,14 +253,13 @@
 .bot-heading-box {
   display: block;
   /* Spans full width of the message bubble */
-  background: rgba(249, 115, 22, 0.06);
-  /* very faint orange background */
-  border: none !important;
-  /* NO BORDER AT ALL */
+  background: rgba(249, 115, 22, 0.08);
+  /* faint orange tint */
+  border-left: 3px solid var(--terminal-orange);
   border-radius: 4px;
   padding: 6px 12px;
-  margin-top: 10px;
-  margin-bottom: 8px;
+  margin-top: 6px;
+  margin-bottom: 6px;
   color: var(--terminal-orange);
   font-weight: bold;
   font-size: 13px;
@@ -271,9 +270,19 @@
 
 .bot-heading-box:hover {
   background: rgba(249, 115, 22, 0.18);
-  /* slightly more visible orange on hover */
-  border: none !important;
   box-shadow: 0 0 6px rgba(249, 115, 22, 0.15);
+}
+
+.bot-special-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.bot-text-line {
+  color: var(--terminal-text-bright);
+  line-height: 1.5;
+  font-size: 12.5px;
+  padding: 0 4px;
 }
 
 @media (max-width: 768px) {

@@ -260,8 +260,6 @@ export default function BotSidebar({
         setShowPanel(false);
         return;
 
-        break;
-
       case "Auto-fill Headers":
         if (setHeadersObj) {
           setHeadersObj([
@@ -452,8 +450,24 @@ export default function BotSidebar({
   const parseBotMessage = (text) => {
     if (typeof text !== "string") return null;
 
+    // Normalize markdown headers (###, ##, #, or **Header**)
+    // Also handle headers when LLM returns them without ### (e.g., lines starting with known emojis like 🧠, 📌, 🚀, 🕵️, 🤔, 🛠️, 🔍, 📝, 🔄, 💡, 🛡️, ⚡, 🐢, etc.)
+    let normalized = text;
+    if (!normalized.includes("###")) {
+      normalized = normalized.replace(
+        /(^|\n)((\*{0,2}(?:🧠|📌|🚀|🕵️|🤔|🛠️|🔍|📝|🔄|💡|🛡️|⚡|🐢|📘|🟢|🟡|🔴|⚠️|✅|❌)[^\n]+?\*{0,2}))(?=\n|$)/g,
+        (match, prefix, heading) => {
+          const cleanHeading = heading.replace(/^\*+|\*+$/g, "").trim();
+          if (cleanHeading.length > 2 && cleanHeading.length < 60) {
+            return `${prefix}### ${cleanHeading}`;
+          }
+          return match;
+        }
+      );
+    }
+
     // Split text into parts using '###' as delimiter, preserving the delimiter
-    const parts = text.split(/(?=###)/g);
+    const parts = normalized.split(/(?=###)/g);
     
     return parts.map((part, index) => {
       const trimmed = part.trim();
@@ -461,26 +475,15 @@ export default function BotSidebar({
       
       if (trimmed.startsWith("###")) {
         const lines = trimmed.split("\n");
-        const heading = lines[0].replace(/###/g, "").trim();
+        const heading = lines[0].replace(/###/g, "").replace(/^\*+|\*+$/g, "").trim();
         const body = lines.slice(1).join("\n").trim();
         
-        const lowerHeading = heading.toLowerCase();
-        const isSpecialHeading = 
-          lowerHeading.includes("diagnosis") || 
-          lowerHeading.includes("summary") || 
-          lowerHeading.includes("suggestion") || 
-          lowerHeading.includes("fix") ||
-          heading.includes("🧠") ||
-          heading.includes("📌") ||
-          heading.includes("🚀") ||
-          heading.includes("💡");
-        
-        if (isSpecialHeading) {
-          return (
-            <div key={index} className="bot-special-section" style={{ marginTop: 10 }}>
-              <div className="bot-heading-box">
-                {heading}
-              </div>
+        return (
+          <div key={index} className="bot-special-section" style={{ marginTop: index > 0 ? 12 : 4 }}>
+            <div className="bot-heading-box">
+              {heading}
+            </div>
+            {body && (
               <div className="bot-text-line" style={{ marginTop: 6 }}>
                 {body.split("\n").map((line, idx) => (
                   <div key={idx} style={{ marginTop: idx > 0 ? 4 : 0 }}>
@@ -488,20 +491,7 @@ export default function BotSidebar({
                   </div>
                 ))}
               </div>
-            </div>
-          );
-        }
-        
-        return (
-          <div key={index} className="bot-general-section" style={{ marginTop: 10 }}>
-            <div className="bot-section-title">{heading}</div>
-            <div className="bot-text-line" style={{ marginTop: 4 }}>
-              {body.split("\n").map((line, idx) => (
-                <div key={idx} style={{ marginTop: idx > 0 ? 4 : 0 }}>
-                  {line.replace(/\*\*/g, "")}
-                </div>
-              ))}
-            </div>
+            )}
           </div>
         );
       } else {
