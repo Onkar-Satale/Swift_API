@@ -12,15 +12,15 @@ from app.schemas.request import AnalyzeRequest, BotRequest
 groq_client = AsyncGroq(api_key=settings.GROQ_API_KEY)
 
 # ---------------- SYSTEM MESSAGES & PROMPTS ----------------
-GLOBAL_SYSTEM_PROMPT = """You are J.A.R.V.I.S. 🤖✨ — a smart, friendly API assistant.
-STYLE REQUIREMENTS (MANDATORY):
+GLOBAL_SYSTEM_PROMPT = """You are J.A.R.V.I.S. 🤖✨ — a fast, punchy, smart API assistant for developers.
+CRITICAL STYLE & BREVITY RULES (MANDATORY):
 - Return ONLY plain text. Do NOT return JSON, markdown code blocks, or raw objects.
-- Keep response concise, crisp, and direct (80-140 words total).
+- KEEP RESPONSES VERY CONCISE AND PUNCHY (50-90 words total across all sections).
+- Every section body MUST be 1-2 short, direct sentences maximum (NO lengthy essays, NO fluff).
+- Bullet points MUST be brief, actionable, and under 12 words each.
 - Use clear section headers separated by ONE empty line.
-- Use emojis in section titles and key insights naturally.
-- Use bullet points with "•" where appropriate.
-- Keep the format clean and visually well-structured.
-- Maintain a professional, confident, but friendly tone without dramatic or emotional filler.
+- Use emojis in section titles naturally.
+- Maintain a sharp, confident developer tone that gets straight to the point.
 """
 
 BOT_SYSTEM_PROMPT = """
@@ -538,60 +538,61 @@ Response Body: {error_content}
     if req.feature == "smart_error_translator":
         return f"""STRUCTURE YOUR RESPONSE EXACTLY LIKE THIS:
 ### 🕵️ What Happened
-(explain what happened in simple English for a junior developer)
+(1-2 short sentences in simple English explaining what failed)
 
 [EMPTY LINE]
 
 ### 🤔 Why It Happened
-(explain why it likely happened)
+(1-2 short sentences explaining the exact technical reason)
 
 [EMPTY LINE]
 
 ### 🛠️ Practical Fixes
-• step 1
-• step 2
+• Actionable fix 1 (under 12 words)
+• Actionable fix 2 (under 12 words)
 
-Now explain this error based on these details:
+Keep the entire answer under 70 words total.
+API Request & Response:
 {base_request_info}"""
     
     elif req.feature == "header_silly_mistakes":
         return f"""STRUCTURE YOUR RESPONSE EXACTLY LIKE THIS:
 ### 🔍 Header Inspection
-• missing or empty header note 1
-• header note 2
+• missing or empty header note
+• header casing/format note
 
 [EMPTY LINE]
 
 ### 📌 Summary
-(1-2 sentences plain English summary of header compliance, formatting, and validity. Do NOT use bullet points here.)
+(1 concise sentence summarizing header validity. NO bullet points.)
 
 [EMPTY LINE]
 
 ### 📝 Corrections
-• fix step 1 (or "No corrections required. Headers are properly configured.")
+• fix step 1 (or "No corrections required. Headers are valid.")
 • fix step 2
 
-Analyze strictly for spelling mistakes, casing, duplicates, missing essential headers, or formatting issues.
+Keep the entire answer under 60 words total.
 Headers:
 {req.headers}"""
 
     elif req.feature == "retry_recommendation":
         return f"""STRUCTURE YOUR RESPONSE EXACTLY LIKE THIS:
 ### 🔄 Retry Decision
-(Retry or Not and short explanation)
+(1 punchy line: state clearly "No. Do not retry." or "Yes. Safe to retry.")
 
 [EMPTY LINE]
 
 ### 📌 Reason
-(clear explanation of why based on status code and response)
+(1-2 concise sentences explaining why based on status code {req.status})
 
 [EMPTY LINE]
 
 ### 🚀 Suggestions
-• suggested retry method step 1
-• step 2
+• Short suggestion 1
+• Short suggestion 2
 
-Decide whether this request should be retried based on:
+Keep the entire answer under 65 words total.
 Status Code: {req.status}
 Response:
 {error_content}"""
@@ -599,78 +600,82 @@ Response:
     elif req.feature == "api_usage_tips":
         return f"""STRUCTURE YOUR RESPONSE EXACTLY LIKE THIS:
 ### 💡 Overview
-(overall api usage)
+(1-2 short sentences assessing this API call)
 
 [EMPTY LINE]
 
 ### 📌 Summary
-(summary of what can be optimized)
+(1 short sentence summarizing what can be optimized)
 
 [EMPTY LINE]
 
 ### 🚀 Tips & Best Practices
-• Pagination
-• Filtering
-• Payload optimization
+• Pagination / Filtering tip (under 10 words)
+• Schema / Payload tip (under 10 words)
 
-Analyze this API call and recommend best practices:
+Keep the entire answer under 70 words total.
+API Details:
 {base_request_info}"""
 
     elif req.feature == "security_judge":
         return f"""STRUCTURE YOUR RESPONSE EXACTLY LIKE THIS:
 ### 🛡️ Security Audit
-(check for missing authentication, exposed keys, HTTP usage, sensitive data leaks, etc)
+(1-2 short sentences assessing authentication, HTTPS, and data exposure)
 
 [EMPTY LINE]
 
 ### 📌 Findings
-(key security notes)
+• Security finding 1 (under 10 words)
+• Security finding 2 (under 10 words)
 
 [EMPTY LINE]
 
 ### 🛠️ Recommendations
-• fix step 1
-• fix step 2
+• Concrete security fix 1 (under 10 words)
+• Concrete security fix 2 (under 10 words)
 
-Analyze this API call strictly for security issues:
+Keep the entire answer under 70 words total.
+API Call:
 {base_request_info}"""
       
     elif req.feature == "advanced_response_time":
         return f"""STRUCTURE YOUR RESPONSE EXACTLY LIKE THIS:
 ### ⚡ Performance Eval
-(analyze performance intuitively based on this status snippet)
+(1-2 short sentences evaluating response speed and status latency)
 
 [EMPTY LINE]
 
 ### 🐢 Bottlenecks
-(backend vs network guess)
+• Root bottleneck 1 (under 10 words)
+• Root bottleneck 2 (under 10 words)
 
 [EMPTY LINE]
 
 ### 🚀 Optimization Suggestions
-• step 1
-• step 2
+• Actionable latency fix 1 (under 10 words)
+• Actionable latency fix 2 (under 10 words)
 
-Analyze for performance:
+Keep the entire answer under 70 words total.
 Status Code: {req.status}"""
 
     else:
         return f"""STRUCTURE YOUR RESPONSE EXACTLY LIKE THIS:
 ### 🧠 Diagnosis
-(explain what happened in 2-3 friendly lines)
+(1-2 short, friendly lines explaining what went wrong)
 
 [EMPTY LINE]
 
 ### 📌 Summary
-(short, clear conclusion)
+(1 short, clear conclusion sentence)
 
 [EMPTY LINE]
 
 ### 🚀 Suggestions
-• bullet point
-• bullet point
+• Actionable tip 1 (under 10 words)
+• Actionable tip 2 (under 10 words)
 
-Now analyze this API call:
+Keep the entire answer under 65 words total.
+API Call:
 {base_request_info}"""
 
 async def generate_bot_response(req: BotRequest) -> dict:
