@@ -557,20 +557,21 @@ Now explain this error based on these details:
     elif req.feature == "header_silly_mistakes":
         return f"""STRUCTURE YOUR RESPONSE EXACTLY LIKE THIS:
 ### 🔍 Header Inspection
-(detect missing or empty headers)
+• missing or empty header note 1
+• header note 2
 
 [EMPTY LINE]
 
 ### 📌 Summary
-(no header issues or overview of duplicate/format metadata)
+(1-2 sentences plain English summary of header compliance, formatting, and validity. Do NOT use bullet points here.)
 
 [EMPTY LINE]
 
 ### 📝 Corrections
-• step 1 (if issues exist)
-• step 2
+• fix step 1 (or "No corrections required. Headers are properly configured.")
+• fix step 2
 
-Analyze only for spelling mistakes, wrong capitalization, duplicates, or format issues.
+Analyze strictly for spelling mistakes, casing, duplicates, missing essential headers, or formatting issues.
 Headers:
 {req.headers}"""
 
