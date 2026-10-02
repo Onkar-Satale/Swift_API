@@ -1,14 +1,10 @@
+import { authFetch } from "./authService";
+
 const HISTORY_API = `${process.env.REACT_APP_BACKEND_URL}/api/history`;
 
 export const getHistory = async () => {
   try {
-    const token = localStorage.getItem("authToken"); // ✅ corrected
-    if (!token) return [];
-
-    const res = await fetch(`${HISTORY_API}?t=${Date.now()}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+    const res = await authFetch(`${HISTORY_API}?t=${Date.now()}`, {
       cache: "no-store",
     });
 
@@ -23,14 +19,10 @@ export const getHistory = async () => {
 // Save a new history entry
 export const saveHistory = async (entry) => {
   try {
-    const token = localStorage.getItem("authToken"); // ✅ corrected
-    if (!token) return { success: false, error: "User not logged in" };
-
-    const res = await fetch(HISTORY_API, {
+    const res = await authFetch(HISTORY_API, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(entry),
     });
@@ -46,14 +38,8 @@ export const saveHistory = async (entry) => {
 // Delete a single history item
 export const deleteHistoryItem = async (historyId) => {
   try {
-    const token = localStorage.getItem("authToken"); // ✅ corrected
-    if (!token) return { success: false, error: "User not logged in" };
-
-    const res = await fetch(`${HISTORY_API}/${historyId}`, {
+    const res = await authFetch(`${HISTORY_API}/${historyId}`, {
       method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
     });
 
     if (!res.ok) throw new Error("Failed to delete history item");
@@ -67,14 +53,8 @@ export const deleteHistoryItem = async (historyId) => {
 // Clear all history
 export const clearHistory = async () => {
   try {
-    const token = localStorage.getItem("authToken"); // ✅ corrected
-    if (!token) return { success: false, error: "User not logged in" };
-
-    const res = await fetch(`${HISTORY_API}/clear`, {
+    const res = await authFetch(`${HISTORY_API}/clear`, {
       method: "PUT",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
     });
 
     if (!res.ok) throw new Error("Failed to clear history");

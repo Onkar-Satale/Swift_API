@@ -2,6 +2,7 @@ import { useState, useRef, useEffect, useContext } from "react";
 import "./BotSidebar.css";
 import { SwiftAPIContext } from "../context/SwiftAPIContext";
 import { showToast } from "../utils/toast";
+import { authFetch } from "../services/authService";
 
 
 export default function BotSidebar({
@@ -182,13 +183,11 @@ export default function BotSidebar({
 
     try {
       const backendUrl = process.env.REACT_APP_BACKEND_URL;
-      const token = localStorage.getItem("authToken");
 
-      const response = await fetch(`${backendUrl}/api/ai/bot`, {
+      const response = await authFetch(`${backendUrl}/api/ai/bot`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          "Authorization": token ? `Bearer ${token}` : ""
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({
           userId: "user123", // the backend will overwrite this securely based on the token
@@ -350,13 +349,11 @@ export default function BotSidebar({
 
     try {
       const backendUrl = process.env.REACT_APP_BACKEND_URL;
-      const token = localStorage.getItem("authToken");
 
-      const res = await fetch(`${backendUrl}/api/ai/analyze`, {
+      const res = await authFetch(`${backendUrl}/api/ai/analyze`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          "Authorization": token ? `Bearer ${token}` : ""
+          "Content-Type": "application/json"
         },
         body: JSON.stringify(payload)
       });

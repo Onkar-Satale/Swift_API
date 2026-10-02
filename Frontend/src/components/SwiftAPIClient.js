@@ -9,6 +9,7 @@ import AccountPage from "./AccountPage";
 import HistorySidebar from "../components/HistorySidebar";
 import ParamsTab from "./ParamsTab";
 import { getHistory, deleteHistoryItem, clearHistory } from "../services/historyService";
+import { authFetch } from "../services/authService";
 import "./SwiftAPIClient.css";
 import RequestBar from "./RequestBar";
 import BotSidebar from "./BotSidebar";
@@ -365,13 +366,11 @@ export default function SwiftAPIClient() {
         finalUrl += finalUrl.includes("?") ? `&${queryString}` : `?${queryString}`;
       }
 
-      const backendToken = localStorage.getItem("authToken");
       const backendUrl = process.env.REACT_APP_BACKEND_URL;
-      const res = await fetch(`${backendUrl}/api/request`, {
+      const res = await authFetch(`${backendUrl}/api/request`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${backendToken}`,
         },
         body: JSON.stringify({
           url: finalUrl,
@@ -384,9 +383,12 @@ export default function SwiftAPIClient() {
       const data = await res.json();
 
       if (!data.success) {
-        setErrorMsg(data.error || "Request failed.");
+        const errorText = res.status === 401 
+          ? "Authentication required. Please log in to send requests." 
+          : (data.error || "Request failed.");
+        setErrorMsg(errorText);
         setStatus("ERR");
-        setResponse({ error: data.error });
+        setResponse({ error: errorText });
         return;
       }
 
