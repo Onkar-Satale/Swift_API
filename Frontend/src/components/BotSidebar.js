@@ -450,42 +450,117 @@ export default function BotSidebar({
   const parseBotMessage = (text) => {
     if (typeof text !== "string") return null;
 
-    // Normalize markdown headers (###, ##, #, or **Header**)
-    // Also handle headers when LLM returns them without ### (e.g., lines starting with known emojis like 🧠, 📌, 🚀, 🕵️, 🤔, 🛠️, 🔍, 📝, 🔄, 💡, 🛡️, ⚡, 🐢, etc.)
-    let normalized = text;
-    if (!normalized.includes("###")) {
-      normalized = normalized.replace(
-        /(^|\n)((\*{0,2}(?:🧠|📌|🚀|🕵️|🤔|🛠️|🔍|📝|🔄|💡|🛡️|⚡|🐢|📘|🟢|🟡|🔴|⚠️|✅|❌)[^\n]+?\*{0,2}))(?=\n|$)/g,
-        (match, prefix, heading) => {
-          const cleanHeading = heading.replace(/^\*+|\*+$/g, "").trim();
-          if (cleanHeading.length > 2 && cleanHeading.length < 60) {
-            return `${prefix}### ${cleanHeading}`;
-          }
-          return match;
-        }
-      );
-    }
+    const lines = text.split("\n");
+    const sections = [];
+    let currentHeading = null;
+    let currentBodyLines = [];
 
-    // Split text into parts using '###' as delimiter, preserving the delimiter
-    const parts = normalized.split(/(?=###)/g);
-    
-    return parts.map((part, index) => {
-      const trimmed = part.trim();
-      if (!trimmed) return null;
-      
-      if (trimmed.startsWith("###")) {
-        const lines = trimmed.split("\n");
-        const heading = lines[0].replace(/###/g, "").replace(/^\*+|\*+$/g, "").trim();
-        const body = lines.slice(1).join("\n").trim();
-        
+    // Robust detector for any feature heading format (markdown, emoji, bold, numbered, keywords)
+    const isHeadingLine = (line) => {
+      const trimmed = line.trim();
+      if (!trimmed) return false;
+
+      // 1. Markdown headers: #, ##, ###, ####
+      if (/^#{1,4}\s+.+$/.test(trimmed)) {
+        return true;
+      }
+
+      // 2. Bold headers: **Heading** or __Heading__ (short title line)
+      if (/^(\*\*|__)[^*_]{2,60}(\*\*|__):?$/.test(trimmed)) {
+        return true;
+      }
+
+      // 3. Numbered headers: 1. **Heading** or 1. Heading
+      if (/^\d+[\.\)]\s+(\*\*)?[^*]+(\*\*)?:?$/.test(trimmed) && trimmed.length < 60) {
+        return true;
+      }
+
+      // 4. Lines starting with feature emojis (excluding bullet lists like "• ...")
+      if (!trimmed.startsWith("•") && !trimmed.startsWith("- ") && !trimmed.startsWith("* ")) {
+        if (/^(\*{0,2}|#{0,3}\s*)?(?:🧠|📌|🚀|🕵️|🤔|🛠️|🔍|📝|🔄|💡|🛡️|⚡|🐢|📘|🟢|🟡|🔴|⚠️|✅|❌)[^\n]{1,60}$/.test(trimmed)) {
+          return true;
+        }
+      }
+
+      // 5. Keyword-based section titles (e.g. "Diagnosis", "Summary", "Suggestions", "Findings", etc.)
+      const cleanLower = trimmed.replace(/^[\s#*_\d\.\)\-:]+|[\s#*_\-:]+$/g, "").toLowerCase();
+      const knownSectionKeywords = [
+        "diagnosis",
+        "summary",
+        "suggestions",
+        "what happened",
+        "why it happened",
+        "practical fixes",
+        "header inspection",
+        "corrections",
+        "retry decision",
+        "reason",
+        "overview",
+        "tips & best practices",
+        "tips and best practices",
+        "security audit",
+        "findings",
+        "recommendations",
+        "performance eval",
+        "performance evaluation",
+        "bottlenecks",
+        "optimization suggestions",
+        "problem",
+        "cause",
+        "fix"
+      ];
+
+      if (knownSectionKeywords.includes(cleanLower)) {
+        return true;
+      }
+
+      return false;
+    };
+
+    const cleanHeadingText = (line) => {
+      return line
+        .replace(/^#{1,6}\s*/, "")
+        .replace(/^\d+[\.\)]\s*/, "")
+        .replace(/\*\*/g, "")
+        .replace(/__/g, "")
+        .replace(/:\s*$/, "")
+        .trim();
+    };
+
+    const flushSection = () => {
+      if (currentHeading !== null || currentBodyLines.length > 0) {
+        sections.push({
+          heading: currentHeading,
+          body: currentBodyLines.join("\n").trim()
+        });
+        currentHeading = null;
+        currentBodyLines = [];
+      }
+    };
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      if (isHeadingLine(line)) {
+        flushSection();
+        currentHeading = cleanHeadingText(line);
+      } else {
+        currentBodyLines.push(line);
+      }
+    }
+    flushSection();
+
+    if (sections.length === 0) return null;
+
+    return sections.map((sec, index) => {
+      if (sec.heading) {
         return (
           <div key={index} className="bot-special-section" style={{ marginTop: index > 0 ? 12 : 4 }}>
             <div className="bot-heading-box">
-              {heading}
+              {sec.heading}
             </div>
-            {body && (
+            {sec.body && (
               <div className="bot-text-line" style={{ marginTop: 6 }}>
-                {body.split("\n").map((line, idx) => (
+                {sec.body.split("\n").map((line, idx) => (
                   <div key={idx} style={{ marginTop: idx > 0 ? 4 : 0 }}>
                     {line.replace(/\*\*/g, "")}
                   </div>
@@ -495,9 +570,10 @@ export default function BotSidebar({
           </div>
         );
       } else {
+        if (!sec.body) return null;
         return (
-          <div key={index} className="bot-text-plain">
-            {trimmed.split("\n").map((line, idx) => (
+          <div key={index} className="bot-text-plain" style={{ marginTop: index > 0 ? 8 : 0 }}>
+            {sec.body.split("\n").map((line, idx) => (
               <div key={idx} className="bot-text-line" style={{ marginTop: idx > 0 ? 4 : 0 }}>
                 {line.replace(/\*\*/g, "")}
               </div>
