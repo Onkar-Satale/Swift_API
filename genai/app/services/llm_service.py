@@ -12,15 +12,14 @@ from app.schemas.request import AnalyzeRequest, BotRequest
 groq_client = AsyncGroq(api_key=settings.GROQ_API_KEY)
 
 # ---------------- SYSTEM MESSAGES & PROMPTS ----------------
-GLOBAL_SYSTEM_PROMPT = """You are J.A.R.V.I.S. 🤖✨ — a fast, punchy, smart API assistant for developers.
-CRITICAL STYLE & BREVITY RULES (MANDATORY):
+GLOBAL_SYSTEM_PROMPT = """You are J.A.R.V.I.S. 🤖✨ — an intelligent, developer-focused API assistant.
+STYLE & DEPTH GUIDELINES (MANDATORY):
 - Return ONLY plain text. Do NOT return JSON, markdown code blocks, or raw objects.
-- KEEP RESPONSES VERY CONCISE AND PUNCHY (50-90 words total across all sections).
-- Every section body MUST be 1-2 short, direct sentences maximum (NO lengthy essays, NO fluff).
-- Bullet points MUST be brief, actionable, and under 12 words each.
-- Use clear section headers separated by ONE empty line.
-- Use emojis in section titles naturally.
-- Maintain a sharp, confident developer tone that gets straight to the point.
+- BALANCED BREVITY (80-130 words total): Provide clear, thorough insights without fluff or textbook essays.
+- COMPLETE & ACTIONABLE: Explain the exact technical cause and provide concrete fixes with examples (e.g. specific endpoints, status codes, or header names).
+- STRUCTURE: Always format into 3 clean sections with headers separated by ONE empty line.
+- BULLETS: Keep bullet points clear, complete, and practical.
+- TONE: Sharp, friendly, and technically accurate for developers.
 """
 
 BOT_SYSTEM_PROMPT = """
@@ -538,61 +537,58 @@ Response Body: {error_content}
     if req.feature == "smart_error_translator":
         return f"""STRUCTURE YOUR RESPONSE EXACTLY LIKE THIS:
 ### 🕵️ What Happened
-(1-2 short sentences in simple English explaining what failed)
+(2-3 clear, friendly sentences explaining what failed, mentioning the endpoint and status code)
 
 [EMPTY LINE]
 
 ### 🤔 Why It Happened
-(1-2 short sentences explaining the exact technical reason)
+(2-3 sentences explaining the underlying technical cause, schema, or routing issue)
 
 [EMPTY LINE]
 
 ### 🛠️ Practical Fixes
-• Actionable fix 1 (under 12 words)
-• Actionable fix 2 (under 12 words)
+• Practical fix step with concrete example (e.g., correct endpoint or parameter)
+• Additional validation or defensive coding recommendation
 
-Keep the entire answer under 70 words total.
 API Request & Response:
 {base_request_info}"""
     
     elif req.feature == "header_silly_mistakes":
         return f"""STRUCTURE YOUR RESPONSE EXACTLY LIKE THIS:
 ### 🔍 Header Inspection
-• missing or empty header note
-• header casing/format note
+• Detailed check on header presence and casing
+• Validation of content types and authentication headers
 
 [EMPTY LINE]
 
 ### 📌 Summary
-(1 concise sentence summarizing header validity. NO bullet points.)
+(1-2 clear sentences summarizing overall header validity and compliance. No bullet points here.)
 
 [EMPTY LINE]
 
 ### 📝 Corrections
-• fix step 1 (or "No corrections required. Headers are valid.")
-• fix step 2
+• Concrete correction step with exact header key/value (or "No corrections required. All headers are valid and compliant.")
+• Best practice tip for header management
 
-Keep the entire answer under 60 words total.
 Headers:
 {req.headers}"""
 
     elif req.feature == "retry_recommendation":
         return f"""STRUCTURE YOUR RESPONSE EXACTLY LIKE THIS:
 ### 🔄 Retry Decision
-(1 punchy line: state clearly "No. Do not retry." or "Yes. Safe to retry.")
+(Clear decision line: e.g. "❌ Do Not Retry — Permanent Client Error" or "🔄 Safe to Retry with Exponential Backoff")
 
 [EMPTY LINE]
 
 ### 📌 Reason
-(1-2 concise sentences explaining why based on status code {req.status})
+(2-3 sentences explaining why, referencing status code {req.status} and whether the failure is transient or permanent)
 
 [EMPTY LINE]
 
 ### 🚀 Suggestions
-• Short suggestion 1
-• Short suggestion 2
+• Immediate action or alternative endpoint to try
+• Resilience recommendation (e.g. backoff policy, circuit breaker, or error fallback)
 
-Keep the entire answer under 65 words total.
 Status Code: {req.status}
 Response:
 {error_content}"""
@@ -600,81 +596,77 @@ Response:
     elif req.feature == "api_usage_tips":
         return f"""STRUCTURE YOUR RESPONSE EXACTLY LIKE THIS:
 ### 💡 Overview
-(1-2 short sentences assessing this API call)
+(2-3 sentences analyzing the request method, endpoint structure, and parameters)
 
 [EMPTY LINE]
 
 ### 📌 Summary
-(1 short sentence summarizing what can be optimized)
+(1-2 sentences highlighting the primary optimization opportunity)
 
 [EMPTY LINE]
 
 ### 🚀 Tips & Best Practices
-• Pagination / Filtering tip (under 10 words)
-• Schema / Payload tip (under 10 words)
+• Pagination / Filtering recommendation with practical example
+• Payload, caching, or header optimization practice
 
-Keep the entire answer under 70 words total.
 API Details:
 {base_request_info}"""
 
     elif req.feature == "security_judge":
         return f"""STRUCTURE YOUR RESPONSE EXACTLY LIKE THIS:
 ### 🛡️ Security Audit
-(1-2 short sentences assessing authentication, HTTPS, and data exposure)
+(2-3 sentences assessing transport encryption (HTTPS), authentication mechanisms, and sensitive data exposure)
 
 [EMPTY LINE]
 
 ### 📌 Findings
-• Security finding 1 (under 10 words)
-• Security finding 2 (under 10 words)
+• Specific security observation regarding auth tokens or exposed parameters
+• Assessment of response body data sensitivity
 
 [EMPTY LINE]
 
 ### 🛠️ Recommendations
-• Concrete security fix 1 (under 10 words)
-• Concrete security fix 2 (under 10 words)
+• Concrete security remediation (e.g. adding Authorization Bearer header, input sanitization)
+• API protection practice (e.g. rate limiting, CORS configuration)
 
-Keep the entire answer under 70 words total.
 API Call:
 {base_request_info}"""
       
     elif req.feature == "advanced_response_time":
         return f"""STRUCTURE YOUR RESPONSE EXACTLY LIKE THIS:
 ### ⚡ Performance Eval
-(1-2 short sentences evaluating response speed and status latency)
+(2-3 sentences analyzing response time, status code efficiency, and processing cost)
 
 [EMPTY LINE]
 
 ### 🐢 Bottlenecks
-• Root bottleneck 1 (under 10 words)
-• Root bottleneck 2 (under 10 words)
+• Analysis of server-side lookup vs network roundtrip overhead
+• Cache hit/miss evaluation for this endpoint
 
 [EMPTY LINE]
 
 ### 🚀 Optimization Suggestions
-• Actionable latency fix 1 (under 10 words)
-• Actionable latency fix 2 (under 10 words)
+• Actionable latency reduction step (e.g. client caching, payload compression)
+• Routing or backend query optimization advice
 
-Keep the entire answer under 70 words total.
 Status Code: {req.status}"""
 
     else:
         return f"""STRUCTURE YOUR RESPONSE EXACTLY LIKE THIS:
 ### 🧠 Diagnosis
-(1-2 short, friendly lines explaining what went wrong)
+(2-3 clear, friendly sentences identifying the core issue, context, and impact)
 
 [EMPTY LINE]
 
 ### 📌 Summary
-(1 short, clear conclusion sentence)
+(1-2 sentences stating the definitive conclusion)
 
 [EMPTY LINE]
 
 ### 🚀 Suggestions
-• Actionable tip 1 (under 10 words)
-• Actionable tip 2 (under 10 words)
+• Actionable fix step with concrete example
+• Preventative coding tip or verification step
 
-Keep the entire answer under 65 words total.
 API Call:
 {base_request_info}"""
 
