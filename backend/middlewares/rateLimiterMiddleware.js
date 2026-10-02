@@ -32,11 +32,11 @@ export const apiRateLimiter = rateLimit({
 
 /**
  * Limit AI requests to prevent excessive LLM usage and API cost.
- * Limit: 5 requests per 1 minute per IP.
+ * Limit: 60 requests per 1 minute per IP.
  */
 export const aiRateLimiter = rateLimit({
   windowMs: 1 * 60 * 1000,
-  max: 5,
+  max: 60,
   standardHeaders: true,
   legacyHeaders: false,
   message: {

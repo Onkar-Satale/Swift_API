@@ -18,7 +18,7 @@ logging.basicConfig(
 )
 
 # Global rate limiter keying by remote client IP address
-limiter = Limiter(key_func=get_remote_address, default_limits=["20/minute"])
+limiter = Limiter(key_func=get_remote_address, default_limits=["60/minute"])
 
 app = FastAPI(title="SwiftAPI GenAI Service with Groq", docs_url=None, redoc_url=None, openapi_url=None)
 app.state.limiter = limiter

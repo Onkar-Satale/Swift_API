@@ -15,7 +15,7 @@ groq_client = AsyncGroq(api_key=settings.GROQ_API_KEY)
 GLOBAL_SYSTEM_PROMPT = """You are J.A.R.V.I.S. 🤖✨ — a smart, friendly API assistant.
 STYLE REQUIREMENTS (MANDATORY):
 - Return ONLY plain text. Do NOT return JSON, markdown code blocks, or raw objects.
-- Keep response between 180-250 words total (not too long, not too brief).
+- Keep response concise, crisp, and direct (80-140 words total).
 - Use clear section headers separated by ONE empty line.
 - Use emojis in section titles and key insights naturally.
 - Use bullet points with "•" where appropriate.
@@ -462,6 +462,35 @@ Always prioritize helping the user understand APIs and solve their backend probl
 
 # ---------------- CORE SERVICE LOGIC ----------------
 
+async def _call_groq_with_fallback(messages: list, max_tokens: int = 250, temperature: float = 0.5) -> str:
+    """
+    Executes a chat completion with primary model (e.g. qwen/qwen3.8-27b) and
+    falls back to secondary model (e.g. openai/gpt-oss-120b) if rate-limited.
+    """
+    primary_model = settings.GROQ_MODEL
+    fallback_model = "openai/gpt-oss-120b" if primary_model == "qwen/qwen3.8-27b" else "qwen/qwen3.8-27b"
+
+    try:
+        res = await groq_client.chat.completions.create(
+            model=primary_model,
+            messages=messages,
+            temperature=temperature,
+            max_tokens=max_tokens
+        )
+        return res.choices[0].message.content
+    except Exception as e:
+        error_msg = str(e)
+        if "429" in error_msg or "rate_limit" in error_msg.lower():
+            logger.warning(f"Rate limit on primary model '{primary_model}'. Falling back to '{fallback_model}'...")
+            res = await groq_client.chat.completions.create(
+                model=fallback_model,
+                messages=messages,
+                temperature=temperature,
+                max_tokens=max_tokens
+            )
+            return res.choices[0].message.content
+        raise
+
 async def generate_analysis(req: AnalyzeRequest) -> dict:
     """
     Constructs feature-specific user prompt and sends async request to Groq LLM API.
@@ -470,16 +499,14 @@ async def generate_analysis(req: AnalyzeRequest) -> dict:
     user_content = build_user_prompt(req)
 
     try:
-        res = await groq_client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+        explanation = await _call_groq_with_fallback(
             messages=[
                 {"role": "system", "content": GLOBAL_SYSTEM_PROMPT},
                 {"role": "user", "content": user_content}
             ],
             temperature=0.5,
-            max_tokens=400
+            max_tokens=250
         )
-        explanation = res.choices[0].message.content
 
         return {
             "type": req.feature,
@@ -678,13 +705,11 @@ async def generate_bot_response(req: BotRequest) -> dict:
     messages.append({"role": "user", "content": user_content})
 
     try:
-        res = await groq_client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
+        explanation = await _call_groq_with_fallback(
             messages=messages,
             temperature=0.5,
-            max_tokens=500
+            max_tokens=300
         )
-        explanation = res.choices[0].message.content
 
         return {
             "type": "bot_response",
